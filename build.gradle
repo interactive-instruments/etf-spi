@@ -1,0 +1,37 @@
+///////////////////////////////////////////////////////////////////////////////////////
+//
+// ETF-SPI
+//
+///////////////////////////////////////////////////////////////////////////////////////
+
+buildscript {
+    repositories {
+        maven {
+            url "http://services.interactive-instruments.de/etfdev-af/plugins-releases-local"
+            credentials {
+                username 'ii-bda'
+                password '6ozhS683'
+            }}
+    }
+    dependencies {
+        classpath group: 'de.interactive_instruments.bda', name: 'etf-bda', version:'1.0.22'
+    }
+    dependencies {
+        ant.unjar src: configurations.classpath.files.find {it.path.contains('etf')}, dest: 'build/gradle'
+    }
+}
+apply from: 'build/gradle/ii-bda.gradle'
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+group = 'de.interactive_instruments.etf'
+description = 'ETF Service provider interface'
+
+dependencies {
+    compile group: 'de.interactive_instruments', name: 'ii-commons-util', version:'2.0.0'+project.snapshotSuffix
+    compile group: 'de.interactive_instruments.etf', name: 'etf-core', version:'1.0.0'+project.snapshotSuffix
+
+    compile group: 'org.slf4j', name: 'slf4j-api', version: etf_slf4jApiVersion
+
+    testCompile group: 'junit', name: 'junit', version: etf_junitTestVersion
+}
