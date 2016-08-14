@@ -16,9 +16,12 @@
 
 package de.interactive_instruments.etf.testdriver.adapter;
 
+import de.interactive_instruments.etf.dal.dto.result.TestResultStatus;
+
 import java.io.File;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The TestResultListener is used to report failures and messages
@@ -36,24 +39,44 @@ public interface TestResultListener {
 	/**
 	 * Called when a test item is run
 	 *
-	 * @param eid Test Model Item ID
+	 * @param testModelItemId Test Model Item EID
 	 * @return eid of the recorded test result item
 	 *
 	 * @throws IllegalArgumentException if the eid is invalid or the test can't be started in the current context
 	 * @throws IllegalStateException if test already has been started or ended
 	 */
-	String start(final String eid) throws IllegalArgumentException, IllegalStateException;
+	String start(final String testModelItemId) throws IllegalArgumentException, IllegalStateException;
 
 	/**
 	 * Called just after a test item has been run
 	 *
-	 * @param eid Test Model Item ID
+	 * @param testModelItemId Test Model Item EID
 	 * @return eid of the recorded test result item
 	 *
 	 * @throws IllegalArgumentException if test already has been ended
 	 * @throws IllegalStateException if test already has been ended or hasn't been started yet
 	 */
-	String end(final String eid, final String status) throws IllegalArgumentException, IllegalStateException;
+	String end(final String testModelItemId, final String status) throws IllegalArgumentException, IllegalStateException;
+
+	/**
+	 * Returns the {@link TestResultStatus} of a non-parametrized Test Model Item.
+	 * "Undefined" is returned if the Test Model Item has not yet been executed.
+	 *
+	 * @param testModelItemId Test Model Item EID
+	 * @return {@link TestResultStatus}
+	 * @throws IllegalArgumentException if the Test Model Item does not exist or the ID refers to a parametrized Test Model Item
+	 */
+	TestResultStatus status(final String testModelItemId) throws IllegalArgumentException;
+
+	/**
+	 * Returns true if the result of a non-parametrized Test Model Item is equal to the passed sequence of {@link TestResultStatus}.
+	 *
+	 * @param testResultStatus {@link TestResultStatus} to compare
+	 * @param testModelItemId Test Model Item EID
+	 * @return {@code true} if one of the passed {@link TestResultStatus} are equal to each other and {@code false} otherwise
+	 * @throws IllegalArgumentException if the Test Model Item does not exist or the ID refers to a parametrized Test Model Item
+	 */
+	boolean statusEqualsAny(final String testModelItemId, final String... testResultStatus) throws IllegalArgumentException;
 
 	/**
 	 * Add a message
