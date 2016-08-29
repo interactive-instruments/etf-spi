@@ -28,10 +28,10 @@ group = 'de.interactive_instruments.etf'
 description = 'ETF Service provider interface'
 
 dependencies {
-    compile group: 'de.interactive_instruments', name: 'ii-commons-util', version:'2.0.0'+project.snapshotSuffix
-    compile group: 'de.interactive_instruments.etf', name: 'etf-core', version:'1.0.0'+project.snapshotSuffix
+    compileOnly group: 'de.interactive_instruments', name: 'ii-commons-util', version:'2.0.0'+project.snapshotSuffix
+    compileOnly group: 'de.interactive_instruments.etf', name: 'etf-core', version:'1.0.0'+project.snapshotSuffix
 
-    compile group: 'org.slf4j', name: 'slf4j-api', version: etf_slf4jApiVersion
+    compileOnly group: 'commons-collections', name: 'commons-collections', version: etf_commonsCollectionsVersion
 
     testCompile group: 'junit', name: 'junit', version: etf_junitTestVersion
 }
