@@ -141,7 +141,7 @@ public class DefaultTestDriverManager implements TestDriverManager {
 
 				// Add new test tasks
 				for (int i = sortedEts.size() - 1; i >= 0; i--) {
-					final TestTaskDto testTaskCopy = new TestTaskDto(testTaskDto);
+					final TestTaskDto testTaskCopy = testTaskDto.createCopy();
 					testTaskCopy.setId(EidFactory.getDefault().createRandomId());
 					testTaskCopy.setExecutableTestSuite(sortedEts.get(i));
 					testTaskCopy.setTestTaskResult(null);
