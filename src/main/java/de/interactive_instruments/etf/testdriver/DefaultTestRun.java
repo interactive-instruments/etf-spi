@@ -20,6 +20,11 @@ import de.interactive_instruments.IFile;
 import de.interactive_instruments.TimeUtils;
 import de.interactive_instruments.etf.dal.dto.result.TestTaskResultDto;
 import de.interactive_instruments.etf.dal.dto.run.TestRunDto;
+import de.interactive_instruments.etf.dal.dto.run.TestTaskDto;
+import de.interactive_instruments.etf.dal.dto.test.TestAssertionDto;
+import de.interactive_instruments.etf.dal.dto.test.TestCaseDto;
+import de.interactive_instruments.etf.dal.dto.test.TestModuleDto;
+import de.interactive_instruments.etf.dal.dto.test.TestStepDto;
 import de.interactive_instruments.etf.model.EID;
 import de.interactive_instruments.exceptions.ExcUtils;
 import de.interactive_instruments.exceptions.InitializationException;
@@ -53,38 +58,46 @@ final class DefaultTestRun implements TestRun {
 	private Instant startInstant;
 	private Instant stopInstant;
 	private Future<TestRunDto> future;
-	private Progress progress = new TestRunProgress();
 
-	private class TestRunProgress implements Progress {
-		@Override public TestRunLogger getLogger() {
-			return testRunLogger;
+	private long maxSteps = -1;
+	private long overallStepsCompleted=0;
+
+	private class RunProgress implements TaskProgress {
+		@Override public long getMaxSteps() {
+			if(maxSteps==-1) {
+				maxSteps=1;
+				if(testRunDto.getTestTasks()!=null) {
+					for (final TestTaskDto testTaskDto : testRunDto.getTestTasks()) {
+						maxSteps+=testTaskDto.getExecutableTestSuite().getAssertionsSize();
+					}
+				}
+			}
+			return maxSteps;
+		}
+
+		@Override public long getCurrentStepsCompleted() {
+			return overallStepsCompleted+
+					testTasks.get(currentRunIndex).getProgress().getCurrentStepsCompleted();
 		}
 
 		@Override public Date getStartTimestamp() {
 			return Date.from(startInstant);
 		}
 
-		@Override public long getMaxSteps() {
-			// TODO
-			return testTasks.size();
-		}
-
-		@Override public long getCurrentStepsCompleted() {
-			// TODO
-
-			return currentRunIndex;
+		@Override public TestRunLogReader getLogReader() {
+			return testRunLogger;
 		}
 
 		@Override public STATE getState() {
 			return currentState;
 		}
 	}
+	private RunProgress runProgress = new RunProgress();
 
-	public DefaultTestRun(final TestRunDto testRunDto, final IFile testRunAttachmentDir) {
+	public DefaultTestRun(final TestRunDto testRunDto, final TestRunLogger testRunLogger, final IFile testRunAttachmentDir) {
 		this.testRunDto = testRunDto;
 		this.testRunAttachmentDir = testRunAttachmentDir;
-		this.testRunLogger = new DefaultTestRunLogger(
-				testRunAttachmentDir, "tr-"+testRunDto.getId().getId());
+		this.testRunLogger = testRunLogger;
 		testRunDto.setLogPath(testRunLogger.getLogFile().getAbsolutePath());
 	}
 
@@ -95,11 +108,12 @@ final class DefaultTestRun implements TestRun {
 	@Override public void setFuture(final Future<TestRunDto> future) throws IllegalStateException {
 		if (this.future != null) {
 			throw new IllegalStateException(
-					"The already set Future can't be changed!");
+					"The already set call back object can not be changed!");
 		}
 		this.future = future;
 	}
 
+	@Override
 	public TestRunDto waitForResult() throws InterruptedException, ExecutionException {
 		return this.future.get();
 	}
@@ -126,6 +140,8 @@ final class DefaultTestRun implements TestRun {
 			fireTestTaskRunning(testTasks.get(currentRunIndex));
 			testTasks.get(currentRunIndex).run();
 			fireTestTaskCompleted(testTasks.get(currentRunIndex));
+			overallStepsCompleted+=testRunDto.getTestTasks().get(currentRunIndex).
+					getExecutableTestSuite().getAssertionsSize();
 			testTasks.get(currentRunIndex).release();
 		}
 		fireCompleted();
@@ -222,6 +238,10 @@ final class DefaultTestRun implements TestRun {
 		this.eventListeners.add(testRunEventListener);
 	}
 
+	@Override public TaskProgress getProgress() {
+		return runProgress;
+	}
+
 	@Override public void init() throws ConfigurationException, InitializationException, InvalidStateTransitionException {
 		fireInitializing();
 		for (final TestTask testTask : testTasks) {
@@ -254,9 +274,6 @@ final class DefaultTestRun implements TestRun {
 		}
 	}
 
-	@Override public Progress getTaskProgress() {
-		return progress;
-	}
 
 	@Override public STATE getState() {
 		return currentState;

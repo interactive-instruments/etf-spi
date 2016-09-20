@@ -97,7 +97,7 @@ public class DefaultTestDriverManager implements TestDriverManager {
 		initialized = false;
 	}
 
-	@Override public TestRun createTestRun(final TestRunDto testRunDto) throws TestRunInitializationException {
+	@Override public TestRun createTestRun(final TestRunDto testRunDto, final TestResultCollectorFactory collectorFactory) throws TestRunInitializationException {
 		try {
 			testRunDto.ensureBasicValidity();
 
@@ -113,10 +113,11 @@ public class DefaultTestDriverManager implements TestDriverManager {
 					secureExpandPathDown("tmp");
 			tmpDir.mkdir();
 
-			final TestRun testRun = new DefaultTestRun(testRunDto, testRunAttachmentDir);
-			final Logger trLogger = testRun.getTaskProgress().getLogger();
-			trLogger.info("Preparing Test Run {} (initiated {})", testRun.getLabel(), testRunDto.getStartTimestamp());
-			trLogger.info("Resolving Executable Test Suite dependencies");
+			final TestRunLogger testRunLogger = new DefaultTestRunLogger(
+					testRunAttachmentDir, "tr-"+testRunDto.getId().getId());
+			final TestRun testRun = new DefaultTestRun(testRunDto, testRunLogger, testRunAttachmentDir);
+			testRunLogger.info("Preparing Test Run {} (initiated {})", testRun.getLabel(), testRunDto.getStartTimestamp());
+			testRunLogger.info("Resolving Executable Test Suite dependencies");
 
 			final List<TestTaskDto> reorganizedTestTasks = new ArrayList<>();
 
@@ -154,27 +155,27 @@ public class DefaultTestDriverManager implements TestDriverManager {
 			// TODO optimize out tasks with equal TO, ETS and parameters
 
 			if(testRunDto.getTestTasks().size()==1) {
-				trLogger.info("Preparing 1 Test Task:");
+				testRunLogger.info("Preparing 1 Test Task:");
 			}else{
-				trLogger.info("Preparing {} Test Task:", testRunDto.getTestTasks().size());
+				testRunLogger.info("Preparing {} Test Task:", testRunDto.getTestTasks().size());
 			}
 			final List<TestTask> testTasks = new ArrayList<>();
 			int counter = 0;
 			for (final TestTaskDto testTaskDto : testRunDto.getTestTasks()) {
-				trLogger.info(" TestTask {} ({})", ++counter, testTaskDto.getId());
-				trLogger.info(" will perform tests on Test Object '{}' by using Executable Test Suite {}", testTaskDto.getTestObject().getLabel(), testTaskDto.getExecutableTestSuite().getDescriptiveLabel());
+				testRunLogger.info(" TestTask {} ({})", ++counter, testTaskDto.getId());
+				testRunLogger.info(" will perform tests on Test Object '{}' by using Executable Test Suite {}", testTaskDto.getTestObject().getLabel(), testTaskDto.getExecutableTestSuite().getDescriptiveLabel());
 				if (testTaskDto.getArguments() != null) {
-					trLogger.info(" with parameters: ");
-					testTaskDto.getArguments().values().entrySet().forEach(p -> trLogger.info("{} = {}", p.getKey(), p.getValue()));
+					testRunLogger.info(" with parameters: ");
+					testTaskDto.getArguments().values().entrySet().forEach(p -> testRunLogger.info("{} = {}", p.getKey(), p.getValue()));
 				}
 				final TestDriver tD = loader.getTestDriverById(testTaskDto.getExecutableTestSuite().getTestDriver().getId().toString());
 				final TestTask testTask = tD.createTestTask(testTaskDto);
 
-				testTask.setResultListener(new DefaultResultListener(testRun.getTaskProgress().getLogger(), tmpDir, testRunAttachmentDir));
+				testTask.setResultListener(collectorFactory.createTestResultCollector(testRunLogger,testTaskDto));
 				testTasks.add(testTask);
 			}
 			((DefaultTestRun) testRun).setTestTasks(testTasks);
-			trLogger.info("Test Tasks prepared and ready to be executed. Waiting for the scheduler to start.");
+			testRunLogger.info("Test Tasks prepared and ready to be executed. Waiting for the scheduler to start.");
 			return testRun;
 		}catch (TestTaskInitializationException | IncompleteDtoException | ComponentNotLoadedException | ConfigurationException | ObjectWithIdNotFoundException e) {
 			throw new TestRunInitializationException(e);
