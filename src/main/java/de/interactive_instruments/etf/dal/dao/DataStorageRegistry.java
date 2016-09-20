@@ -37,17 +37,20 @@ public final class DataStorageRegistry {
 		dataStorage.release();
 	}
 
-	public void register(final String name, final DataStorage dataStorage) {
+	public void register(final DataStorage dataStorage) {
 		if(dataStorage==null) {
 			throw new NullPointerException("Data Storage not provided");
 		}
 		if(!dataStorage.isInitialized()) {
 			throw new NullPointerException("Data Storage not initialized");
 		}
-		dataStorages.putIfAbsent(name, dataStorage);
+		dataStorages.putIfAbsent(dataStorage.getClass().getName(), dataStorage);
 	}
 
 	public DataStorage get(final String name) {
+		if("default".equals(name)) {
+			return dataStorages.values().iterator().next();
+		}
 		return dataStorages.get(name);
 	}
 
