@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
@@ -35,43 +36,81 @@ import java.util.List;
  * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
  */
 final class ComponentClassLoader extends ClassLoader implements Closeable {
-
 	private final Logger logger = LoggerFactory.getLogger(ComponentClassLoader.class);
 	private final ChildURLClassLoader childClassLoader;
 
-	private class FindClassClassLoader extends ClassLoader {
-		public FindClassClassLoader(final ClassLoader parent) {
+	private static class ParentDelegationClassClassLoader extends ClassLoader {
+		private final Logger logger;
+
+		ParentDelegationClassClassLoader(final ClassLoader parent, final Logger logger) {
 			super(parent);
+			this.logger=logger;
 		}
 
 		@Override
 		public Class<?> findClass(String name) throws ClassNotFoundException {
-			logger.trace("{} : Loading of class {} failed, trying class loader {}",
+			logger.trace("{} : Loading of class {} failed, trying parent class loader {}",
 					this.getClass().getSimpleName(), name, super.getClass().getSimpleName());
 			return super.findClass(name);
 		}
+
+		@Override
+		public URL getResource(String name) {
+			logger.trace("{} : Loading of resource {} failed, trying parent class loader {}",
+					this.getClass().getSimpleName(), name, super.getClass().getSimpleName());
+			return super.getResource(name);
+		}
+
+		@Override public InputStream getResourceAsStream(final String name) {
+			logger.trace("{} : Loading of resource {} failed, trying parent class loader {}",
+					this.getClass().getSimpleName(), name, super.getClass().getSimpleName());
+			return super.getResourceAsStream(name);
+		}
 	}
 
-	private class ChildURLClassLoader extends URLClassLoader {
-		private FindClassClassLoader realParent;
+	private static class ChildURLClassLoader extends URLClassLoader {
+		private final ParentDelegationClassClassLoader realParent;
+		private final Logger logger;
 
-		public ChildURLClassLoader(final URL[] urls, final FindClassClassLoader realParent) {
+		ChildURLClassLoader(final URL[] urls, final ParentDelegationClassClassLoader realParent, final Logger logger) {
 			super(urls, null);
-
 			this.realParent = realParent;
+			this.logger=logger;
 		}
 
 		@Override
 		public Class<?> findClass(final String name) throws ClassNotFoundException {
 			try {
-				// first try to use the URLClassLoader findClass
 				logger.trace("{} : Trying to load class {}", this.getClass().getSimpleName(), name);
+				final Class<?> loaded = super.findLoadedClass(name);
+				if( loaded != null ) {
+					// Already defined
+					return loaded;
+				}
 				return super.findClass(name);
 			} catch (ClassNotFoundException e) {
-				// if that fails, we ask our real parent classloader to load the class (we give up)
-				logger.trace("{} : Loading of class {} failed, trying class loader {}",
-						this.getClass().getSimpleName(), name, super.getClass().getSimpleName());
 				return realParent.loadClass(name);
+			}
+		}
+
+		@Override
+		public URL getResource(String name) {
+			logger.trace("{} : Trying to load resource {}", this.getClass().getSimpleName(), name);
+			final URL resource = super.getResource(name);
+			if(resource!=null) {
+				return resource;
+			}else{
+				return realParent.getResource(name);
+			}
+		}
+
+		@Override public InputStream getResourceAsStream(final String name) {
+			logger.trace("{} : Trying to load resource {}", this.getClass().getSimpleName(), name);
+			final InputStream stream = super.getResourceAsStream(name);
+			if(stream!=null) {
+				return stream;
+			}else{
+				return realParent.getResourceAsStream(name);
 			}
 		}
 	}
@@ -79,20 +118,44 @@ final class ComponentClassLoader extends ClassLoader implements Closeable {
 	ComponentClassLoader(List<URL> classpath) {
 		super(Thread.currentThread().getContextClassLoader());
 		final URL[] urls = classpath.toArray(new URL[classpath.size()]);
-		childClassLoader = new ChildURLClassLoader(urls, new FindClassClassLoader(this.getParent()));
+		childClassLoader = new ChildURLClassLoader(urls,
+				new ParentDelegationClassClassLoader(this.getParent(),logger),logger);
 	}
 
 	@Override
 	protected synchronized Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
 		try {
-			// first we try to find a class inside the child classloader
 			logger.trace("{} : Trying to load class {}", this.getClass().getSimpleName(), name);
 			return childClassLoader.findClass(name);
 		} catch (ClassNotFoundException e) {
-			// didn't find it, try the parent
 			logger.trace("{} : Loading of class {} failed, trying class loader {}",
 					this.getClass().getSimpleName(), name, super.getClass().getSimpleName());
 			return super.loadClass(name, resolve);
+		}
+	}
+
+	@Override
+	public URL getResource(String name) {
+		logger.trace("{} : Trying to load resource {}", this.getClass().getSimpleName(), name);
+		final URL resource = childClassLoader.getResource(name);
+		if(resource!=null) {
+			return resource;
+		}else{
+			logger.trace("{} : Loading of resource {} failed, trying class loader {}",
+					this.getClass().getSimpleName(), name, super.getClass().getSimpleName());
+			return super.getResource(name);
+		}
+	}
+
+	@Override public InputStream getResourceAsStream(final String name) {
+		logger.trace("{} : Trying to load resource {}", this.getClass().getSimpleName(), name);
+		final InputStream stream = childClassLoader.getResourceAsStream(name);
+		if(stream!=null) {
+			return stream;
+		}else{
+			logger.trace("{} : Loading of resource {} failed, trying class loader {}",
+					this.getClass().getSimpleName(), name, super.getClass().getSimpleName());
+			return super.getResourceAsStream(name);
 		}
 	}
 
