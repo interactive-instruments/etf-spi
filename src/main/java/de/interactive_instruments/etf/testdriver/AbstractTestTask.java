@@ -17,7 +17,6 @@
 package de.interactive_instruments.etf.testdriver;
 
 import de.interactive_instruments.etf.dal.dto.result.TestTaskResultDto;
-import de.interactive_instruments.etf.dal.dto.run.TestRunDto;
 import de.interactive_instruments.etf.dal.dto.run.TestTaskDto;
 import de.interactive_instruments.etf.model.EID;
 import de.interactive_instruments.exceptions.ExcUtils;
@@ -65,10 +64,13 @@ public abstract class AbstractTestTask implements TestTask {
 		return testTaskDto.getTestTaskResult();
 	}
 
-	protected abstract void doInit() throws ConfigurationException, InitializationException, InvalidStateTransitionException;
+	protected abstract void doInit() throws ConfigurationException, InitializationException;
 
 	@Override
 	public final void init() throws ConfigurationException, InvalidStateTransitionException, InitializationException {
+		if(initialized) {
+			throw new InvalidStateTransitionException("Test Task is already initialized");
+		}
 		if(resultCollector ==null) {
 			throw new IllegalStateException("Result Listener not set");
 		}

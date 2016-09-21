@@ -20,6 +20,7 @@ import de.interactive_instruments.IFile;
 import de.interactive_instruments.JarUtils;
 import de.interactive_instruments.Releasable;
 import de.interactive_instruments.etf.component.ComponentInfo;
+import de.interactive_instruments.etf.component.ComponentLoadingException;
 import de.interactive_instruments.exceptions.InitializationException;
 import de.interactive_instruments.exceptions.InvalidStateTransitionException;
 import de.interactive_instruments.exceptions.config.ConfigurationException;
@@ -81,7 +82,7 @@ final class ComponentContainer implements Releasable {
                 }
                 if (testDriverInitializerClass == null) {
                     // is the test driver using the same etf-model?
-                    throw new ComponentLoadingException(componentJar.toPath(), "ComponentInitializer class not found");
+                    throw new ComponentLoadingException(componentJar.toPath(), "No ComponentInitializer annotated class found");
                 }
             } catch (NullPointerException | NoClassDefFoundError | ClassNotFoundException | IOException e) {
                 throw new ComponentLoadingException(componentJar.toPath(), e);

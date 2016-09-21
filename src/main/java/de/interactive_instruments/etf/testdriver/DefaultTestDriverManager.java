@@ -18,6 +18,7 @@ package de.interactive_instruments.etf.testdriver;
 
 import de.interactive_instruments.IFile;
 import de.interactive_instruments.etf.component.ComponentInfo;
+import de.interactive_instruments.etf.component.ComponentLoadingException;
 import de.interactive_instruments.etf.component.ComponentNotLoadedException;
 import de.interactive_instruments.etf.dal.dao.WriteDao;
 import de.interactive_instruments.etf.dal.dto.IncompleteDtoException;
@@ -63,20 +64,23 @@ public class DefaultTestDriverManager implements TestDriverManager {
 		return loader.getTestDrivers().stream().map(TestDriver::getInfo).collect(Collectors.toList());
 	}
 
+	@Override public void loadAll() throws ComponentLoadingException, ConfigurationException {
+		loader.load();
+	}
+
+	@Override public void load(final EID testDriverId) throws ObjectWithIdNotFoundException, ComponentLoadingException, ConfigurationException {
+		loader.load(testDriverId.getId());
+	}
+
 	@Override public ConfigPropertyHolder getConfigurationProperties() {
 		return configProperties;
 	}
 
 	@Override public void init() throws ConfigurationException, InitializationException {
 		configProperties.expectAllRequiredPropertiesSet();
-		try {
-			loader = new TestDriverLoader(configProperties.getPropertyAsFile(ETF_TESTDRIVERS_DIR));
-			loader.setConfig(configProperties);
-			loader.load();
-			initialized = true;
-		}catch (final ComponentLoadingException e) {
-			throw new InitializationException(e);
-		}
+		loader = new TestDriverLoader(configProperties.getPropertyAsFile(ETF_TESTDRIVERS_DIR));
+		loader.setConfig(configProperties);
+		initialized = true;
 	}
 
 	@Override public boolean isInitialized() {
@@ -93,7 +97,9 @@ public class DefaultTestDriverManager implements TestDriverManager {
 
 
 	@Override public void release() {
-		loader.release();
+		if(loader!=null) {
+			loader.release();
+		}
 		initialized = false;
 	}
 

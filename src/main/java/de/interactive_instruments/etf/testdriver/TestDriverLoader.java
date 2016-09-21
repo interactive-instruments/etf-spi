@@ -19,6 +19,7 @@ package de.interactive_instruments.etf.testdriver;
 import de.interactive_instruments.IFile;
 import de.interactive_instruments.Releasable;
 import de.interactive_instruments.etf.component.ComponentInfo;
+import de.interactive_instruments.etf.component.ComponentLoadingException;
 import de.interactive_instruments.etf.component.ComponentNotLoadedException;
 import de.interactive_instruments.etf.dal.dao.DataStorage;
 import de.interactive_instruments.exceptions.config.ConfigurationException;
