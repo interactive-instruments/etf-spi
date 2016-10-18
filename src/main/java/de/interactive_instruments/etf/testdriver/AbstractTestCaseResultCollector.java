@@ -15,21 +15,15 @@
  */
 package de.interactive_instruments.etf.testdriver;
 
-import static de.interactive_instruments.etf.testdriver.AbstractTestResultCollector.ResultCollectorState.*;
+import static de.interactive_instruments.etf.testdriver.AbstractTestCaseResultCollector.TestCaseResultCollectorState.*;
 
 /**
  *
  * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
  */
-public abstract class AbstractTestResultCollector extends AbstractTestCollector implements TestResultCollector {
+public abstract class AbstractTestCaseResultCollector extends AbstractTestCollector {
 
-	protected enum ResultCollectorState {
-		READY,
-
-		WRITING_TEST_TASK_RESULT,
-
-		WRITING_TEST_MODULE_RESULT,
-
+	protected enum TestCaseResultCollectorState {
 		WRITING_TEST_CASE_RESULT,
 
 		WRITING_TEST_STEP_RESULT,
@@ -50,58 +44,28 @@ public abstract class AbstractTestResultCollector extends AbstractTestCollector 
 
 		TEST_CASE_RESULT_FINISHED,
 
-		TEST_MODULE_RESULT_FINISHED,
-
-		TEST_TASK_RESULT_FINISHED,
+		RELEASED,
 	}
 
-	private ResultCollectorState currentState = ResultCollectorState.READY;
-	private AbstractTestTaskProgress taskProgress;
+	private TestCaseResultCollectorState currentState = WRITING_TEST_CASE_RESULT;
 
-	private void setState(final ResultCollectorState newState) {
+	protected final String testCaseId;
+	private final AbstractTestCollector parentCollector;
+
+	protected AbstractTestCaseResultCollector(final AbstractTestCollector parentCollector, final String testCaseId) {
+		this.testCaseId = testCaseId;
+		this.parentCollector = parentCollector;
+	}
+
+	private void setState(final TestCaseResultCollectorState newState) {
 		logger.trace("Switching from state {} to state {} ", this.currentState, newState);
 		this.currentState = newState;
-	}
-
-	void setTaskProgress(final AbstractTestTaskProgress taskProgress) {
-		this.taskProgress = taskProgress;
-	}
-
-	abstract protected String startTestTaskResult(final String resultedFrom, final long startTimestamp) throws Exception;
-
-	@Override
-	final public String startTestTask(final String testModelItemId, final long startTimestamp) throws IllegalArgumentException, IllegalStateException {
-		if (currentState != READY) {
-			throw new IllegalStateException("Illegal state transition: cannot start writing Test Task result when in " + currentState + " state");
-		}
-		setState(WRITING_TEST_TASK_RESULT);
-		try {
-			return startTestTaskResult(testModelItemId, startTimestamp);
-		} catch (Exception e) {
-			throw new IllegalArgumentException(e);
-		}
-	}
-
-	abstract protected String startTestModuleResult(final String resultedFrom, final long startTimestamp) throws Exception;
-
-	@Override
-	final public String startTestModule(final String testModelItemId, final long startTimestamp) throws IllegalArgumentException, IllegalStateException {
-		if (currentState != WRITING_TEST_TASK_RESULT && currentState != TEST_MODULE_RESULT_FINISHED) {
-			throw new IllegalStateException("Illegal state transition: cannot start writing Test Module result when in " + currentState + " state");
-		}
-		setState(WRITING_TEST_MODULE_RESULT);
-		try {
-			return startTestModuleResult(testModelItemId, startTimestamp);
-		} catch (Exception e) {
-			throw new IllegalArgumentException(e);
-		}
 	}
 
 	@Override
 	final public String startTestCase(final String testModelItemId, final long startTimestamp) throws IllegalArgumentException, IllegalStateException {
 		try {
 			switch (currentState) {
-			case WRITING_TEST_MODULE_RESULT:
 			case TEST_CASE_RESULT_FINISHED:
 				setState(WRITING_TEST_CASE_RESULT);
 				return startTestCaseResult(testModelItemId, startTimestamp);
@@ -116,7 +80,7 @@ public abstract class AbstractTestResultCollector extends AbstractTestCollector 
 			case WRITING_CALLED_TEST_STEP_RESULT:
 				return subCollector.startTestCase(testModelItemId, startTimestamp);
 			}
-			throw new IllegalStateException("Illegal state transition: cannot start writing Test Case result when in " + currentState + " state");
+			throw new IllegalStateException("Illegal state transition: cannot start writing Test Case results when in " + currentState + " state");
 		} catch (Exception e) {
 			throw new IllegalArgumentException(e);
 		}
@@ -126,8 +90,11 @@ public abstract class AbstractTestResultCollector extends AbstractTestCollector 
 	final public String startTestStep(final String testModelItemId, final long startTimestamp) throws IllegalArgumentException, IllegalStateException {
 		try {
 			switch (currentState) {
-			case WRITING_TEST_CASE_RESULT:
 			case TEST_STEP_RESULT_FINISHED:
+				setState(WRITING_TEST_STEP_RESULT);
+				return startTestStepResult(testModelItemId, startTimestamp);
+			case WRITING_TEST_CASE_RESULT:
+			case TEST_CASE_RESULT_FINISHED:
 				setState(WRITING_TEST_STEP_RESULT);
 				return startTestStepResult(testModelItemId, startTimestamp);
 			case WRITING_TEST_STEP_RESULT:
@@ -141,7 +108,7 @@ public abstract class AbstractTestResultCollector extends AbstractTestCollector 
 			case WRITING_CALLED_TEST_STEP_RESULT:
 				return subCollector.startTestStep(testModelItemId, startTimestamp);
 			}
-			throw new IllegalStateException("Illegal state transition: cannot start writing Test Step result when in " + currentState + " state");
+			throw new IllegalStateException("Illegal state transition: cannot start writing Test Step results when in " + currentState + " state");
 		} catch (Exception e) {
 			throw new IllegalArgumentException(e);
 		}
@@ -163,29 +130,26 @@ public abstract class AbstractTestResultCollector extends AbstractTestCollector 
 			case WRITING_CALLED_TEST_STEP_RESULT:
 				return subCollector.startTestAssertion(testModelItemId, startTimestamp);
 			}
-			throw new IllegalStateException("Illegal state transition: cannot start writing Test Assertion result when in " + currentState + " state");
+			throw new IllegalStateException("Illegal state transition: cannot start writing Test Step results when in " + currentState + " state");
 		} catch (Exception e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
 
-	abstract protected String endTestTaskResult(final String testModelItemId, final int status, final long stopTimestamp) throws Exception;
-
-	abstract protected String endTestModuleResult(final String testModelItemId, final int status, final long stopTimestamp) throws Exception;
-
 	@Override
 	final public String end(final String testModelItemId, final int status, final long stopTimestamp) throws IllegalArgumentException, IllegalStateException {
 		try {
 			switch (currentState) {
-			case TEST_MODULE_RESULT_FINISHED:
-				setState(TEST_TASK_RESULT_FINISHED);
-				return endTestTaskResult(testModelItemId, status, stopTimestamp);
-			case TEST_CASE_RESULT_FINISHED:
-				setState(TEST_MODULE_RESULT_FINISHED);
-				return endTestModuleResult(testModelItemId, status, stopTimestamp);
 			case TEST_STEP_RESULT_FINISHED:
-				setState(TEST_CASE_RESULT_FINISHED);
-				return endTestCaseResult(testModelItemId, status, stopTimestamp);
+				if (testModelItemId.equals(testCaseId)) {
+					final String id = endTestCaseResult(testModelItemId, status, stopTimestamp);
+					parentCollector.releaseSubCollector();
+					setState(RELEASED);
+					return id;
+				} else {
+					setState(TEST_CASE_RESULT_FINISHED);
+					return endTestCaseResult(testModelItemId, status, stopTimestamp);
+				}
 			case CALLED_TEST_CASE_RESULT_FINISHED:
 			case CALLED_TEST_STEP_RESULT_FINISHED:
 				endInvokedTests();
@@ -194,14 +158,10 @@ public abstract class AbstractTestResultCollector extends AbstractTestCollector 
 			case TEST_ASSERTION_RESULT_FINISHED:
 				endTestAssertionResults();
 			case WRITING_TEST_STEP_RESULT:
-				// no assertions or invoked tests added
 				setState(TEST_STEP_RESULT_FINISHED);
 				return endTestStepResult(testModelItemId, status, stopTimestamp);
 			case WRITING_TEST_ASSERTION_RESULT:
 				setState(TEST_ASSERTION_RESULT_FINISHED);
-				if (taskProgress != null) {
-					taskProgress.advance();
-				}
 				return endTestAssertionResult(testModelItemId, status, stopTimestamp);
 			case WRITING_CALLED_TEST_CASE_RESULT:
 			case WRITING_CALLED_TEST_STEP_RESULT:
@@ -231,10 +191,6 @@ public abstract class AbstractTestResultCollector extends AbstractTestCollector 
 	@Override
 	public int currentModelType() {
 		switch (currentState) {
-		case WRITING_TEST_TASK_RESULT:
-		case TEST_MODULE_RESULT_FINISHED:
-			return 1;
-		case WRITING_TEST_MODULE_RESULT:
 		case TEST_CASE_RESULT_FINISHED:
 			return 2;
 		case WRITING_TEST_CASE_RESULT:
