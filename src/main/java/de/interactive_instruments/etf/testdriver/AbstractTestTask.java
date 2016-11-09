@@ -1,11 +1,11 @@
-/*
- * Copyright ${year} interactive instruments GmbH
+/**
+ * Copyright 2010-2016 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * you may not use this path except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,8 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package de.interactive_instruments.etf.testdriver;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import de.interactive_instruments.etf.dal.dto.result.TestTaskResultDto;
 import de.interactive_instruments.etf.dal.dto.run.TestTaskDto;
@@ -24,11 +28,6 @@ import de.interactive_instruments.exceptions.InitializationException;
 import de.interactive_instruments.exceptions.InvalidStateTransitionException;
 import de.interactive_instruments.exceptions.config.ConfigurationException;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
 /**
  *
  * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
@@ -37,30 +36,35 @@ public abstract class AbstractTestTask implements TestTask {
 
 	final protected TestTaskDto testTaskDto;
 	private ArrayList<TaskStateEventListener> eventListeners;
-	private boolean initialized;
 	private Future<TestTaskResultDto> future;
 	protected final AbstractTestTaskProgress progress;
+	private final ClassLoader classLoader;
 	// TODO make private when interface is implemented in BaseX
 	protected TestResultCollector resultCollector;
 
-	protected AbstractTestTask(final TestTaskDto testTaskDto, final AbstractTestTaskProgress progress) {
+	protected AbstractTestTask(final TestTaskDto testTaskDto, final AbstractTestTaskProgress progress, final ClassLoader classLoader) {
 		this.testTaskDto = testTaskDto;
 		this.progress = progress;
+		this.classLoader = classLoader;
 	}
 
-	@Override public EID getId() {
+	@Override
+	public EID getId() {
 		return testTaskDto.getId();
 	}
 
-	@Override public final void run() throws Exception {
-		fireInitializing();
+	@Override
+	public final void run() throws Exception {
+		Thread.currentThread().setContextClassLoader(classLoader);
+		fireRunning();
 		doRun();
 		fireCompleted();
 	}
 
 	protected abstract void doRun() throws Exception;
 
-	@Override public TestTaskResultDto getResult() {
+	@Override
+	public TestTaskResultDto getResult() {
 		return testTaskDto.getTestTaskResult();
 	}
 
@@ -68,20 +72,19 @@ public abstract class AbstractTestTask implements TestTask {
 
 	@Override
 	public final void init() throws ConfigurationException, InvalidStateTransitionException, InitializationException {
-		if(initialized) {
-			throw new InvalidStateTransitionException("Test Task is already initialized");
-		}
-		if(resultCollector ==null) {
+		Thread.currentThread().setContextClassLoader(classLoader);
+		fireInitializing();
+		if (resultCollector == null) {
 			throw new IllegalStateException("Result Listener not set");
 		}
 		doInit();
 		getLogger().info("TestRunTask initialized");
-		initialized=true;
+		fireInitialized();
 	}
 
 	@Override
 	public boolean isInitialized() {
-		return this.initialized;
+		return progress.getState().isAtLeastInitialized();
 	}
 
 	protected abstract void doRelease();
@@ -92,7 +95,6 @@ public abstract class AbstractTestTask implements TestTask {
 			fireFinalizing();
 			getLogger().info("Releasing resources");
 			doRelease();
-			initialized=false;
 		} catch (InvalidStateTransitionException e) {
 			ExcUtils.suppress(e);
 		} catch (Exception e) {
@@ -103,7 +105,7 @@ public abstract class AbstractTestTask implements TestTask {
 	protected abstract void doCancel() throws InvalidStateTransitionException;
 
 	protected void checkCancelStatus() throws InterruptedException {
-		if (progress.currentState == TaskState.STATE.CANCELING ||
+		if (progress.getCurrentState() == TaskState.STATE.CANCELING ||
 				Thread.currentThread().isInterrupted()) {
 			try {
 				cancel();
@@ -124,19 +126,23 @@ public abstract class AbstractTestTask implements TestTask {
 		getLogger().info("TestRunTask." + getId() + " canceled");
 	}
 
-	@Override public TestRunLogger getLogger() {
+	@Override
+	public TestRunLogger getLogger() {
 		return resultCollector.getLogger();
 	}
 
-	@Override public TaskProgress getProgress() {
+	@Override
+	public TaskProgress getProgress() {
 		return this.progress;
 	}
 
-	@Override public STATE getState() {
-		return this.progress.currentState;
+	@Override
+	public STATE getState() {
+		return this.progress.getCurrentState();
 	}
 
-	@Override public void setFuture(final Future<TestTaskResultDto> future) throws IllegalStateException {
+	@Override
+	public void setFuture(final Future<TestTaskResultDto> future) throws IllegalStateException {
 		if (this.future != null) {
 			throw new IllegalStateException(
 					"The already set call back object can not be changed!");
@@ -144,7 +150,8 @@ public abstract class AbstractTestTask implements TestTask {
 		this.future = future;
 	}
 
-	@Override public TestTaskResultDto call() throws Exception {
+	@Override
+	public TestTaskResultDto call() throws Exception {
 		run();
 		return testTaskDto.getTestTaskResult();
 	}
@@ -168,32 +175,31 @@ public abstract class AbstractTestTask implements TestTask {
 	*/
 
 	final private void changeState(TaskState.STATE state, boolean reqCondition) throws InvalidStateTransitionException {
-		if(!reqCondition || progress.currentState==state) {
-			final String errorMsg = "Illegal state transition in task "+this.testTaskDto.getId()+
-					" from "+progress.currentState+" to "+state;
-			if(resultCollector !=null) {
+		if (!reqCondition || progress.getCurrentState() == state) {
+			final String errorMsg = "Illegal state transition in task " + this.testTaskDto.getId() +
+					" from " + progress.getCurrentState() + " to " + state;
+			if (resultCollector != null) {
 				getLogger().error(errorMsg);
 			}
 			throw new InvalidStateTransitionException(errorMsg);
 		}
-		if(progress.oldState!=null) {
+		if (progress.getOldState() != null) {
 			// TODO
 			// getLogger().info("Changed state from {} to {}", this.oldState, this.currentState);
-		}else{
+		} else {
 			// TODO
 			// getLogger().info("Setting state to {}", this.currentState);
 		}
 		synchronized (this) {
-			progress.oldState = progress.currentState;
-			progress.currentState = state;
+			progress.setState(state);
 			if (this.eventListeners != null) {
-				this.eventListeners.forEach(l ->
-						l.taskStateChangedEvent(this, progress.currentState, progress.oldState));
+				this.eventListeners.forEach(l -> l.taskStateChangedEvent(this, progress.getCurrentState(), progress.getOldState()));
 			}
 		}
 	}
 
-	@Override public void setResultListener(final TestResultCollector listener) {
+	@Override
+	public void setResultListener(final TestResultCollector listener) {
 		this.resultCollector = listener;
 		this.progress.setLogReader(resultCollector.getLogger());
 		if (this.resultCollector instanceof AbstractTestResultCollector) {
@@ -207,32 +213,31 @@ public abstract class AbstractTestTask implements TestTask {
 	 */
 	private void fireInitializing() throws InvalidStateTransitionException {
 		changeState(TaskState.STATE.INITIALIZING,
-				(progress.currentState== TaskState.STATE.CREATED));
-		progress.startInstant=Instant.now();
+				(progress.getCurrentState() == TaskState.STATE.CREATED));
+		progress.startInstant = Instant.now();
 	}
 
-	protected final void fireInitialized() throws InvalidStateTransitionException {
+	private final void fireInitialized() throws InvalidStateTransitionException {
 		changeState(TaskState.STATE.INITIALIZED,
-				(progress.currentState== TaskState.STATE.INITIALIZING));
+				(progress.getCurrentState() == TaskState.STATE.INITIALIZING));
 	}
 
-	protected final void fireRunning() throws InvalidStateTransitionException {
+	private final void fireRunning() throws InvalidStateTransitionException {
 		changeState(TaskState.STATE.RUNNING,
-				(progress.currentState== TaskState.STATE.INITIALIZED));
+				(progress.getCurrentState() == TaskState.STATE.INITIALIZED));
 	}
 
 	private void fireCompleted() throws InvalidStateTransitionException {
 		changeState(TaskState.STATE.COMPLETED,
-				(progress.currentState== TaskState.STATE.RUNNING));
-		progress.stopInstant=Instant.now();
+				(progress.getCurrentState() == TaskState.STATE.RUNNING));
+		progress.stopInstant = Instant.now();
 	}
-
 
 	final void fireFinalizing() throws InvalidStateTransitionException {
 		changeState(TaskState.STATE.FINALIZING,
-				(progress.currentState== TaskState.STATE.COMPLETED ||
-						progress.currentState== TaskState.STATE.CANCELED ||
-						progress.currentState== TaskState.STATE.FAILED));
+				(progress.getCurrentState() == TaskState.STATE.COMPLETED ||
+						progress.getCurrentState() == TaskState.STATE.CANCELED ||
+						progress.getCurrentState() == TaskState.STATE.FAILED));
 	}
 
 	/**
@@ -240,25 +245,25 @@ public abstract class AbstractTestTask implements TestTask {
 	 *
 	 * Does not throw an exception!
 	 */
-	final void fireFailed()  {
+	final void fireFailed() {
 		try {
 			changeState(TaskState.STATE.FAILED,
-					(progress.currentState== TaskState.STATE.CREATED) ||
-							(progress.currentState== TaskState.STATE.INITIALIZING) ||
-							(progress.currentState== TaskState.STATE.INITIALIZED)  ||
-							(progress.currentState== TaskState.STATE.RUNNING));
+					(progress.getCurrentState() == TaskState.STATE.CREATED) ||
+							(progress.getCurrentState() == TaskState.STATE.INITIALIZING) ||
+							(progress.getCurrentState() == TaskState.STATE.INITIALIZED) ||
+							(progress.getCurrentState() == TaskState.STATE.RUNNING));
 		} catch (InvalidStateTransitionException e) {
 			ExcUtils.suppress(e);
 		}
-		progress.stopInstant=Instant.now();
+		progress.stopInstant = Instant.now();
 	}
 
 	final protected void fireCanceling() throws InvalidStateTransitionException {
 		changeState(TaskState.STATE.CANCELING,
-				(progress.currentState== TaskState.STATE.CREATED ||
-						progress.currentState== TaskState.STATE.INITIALIZING ||
-						progress.currentState== TaskState.STATE.INITIALIZED ||
-						progress.currentState== TaskState.STATE.RUNNING) );
+				(progress.getCurrentState() == TaskState.STATE.CREATED ||
+						progress.getCurrentState() == TaskState.STATE.INITIALIZING ||
+						progress.getCurrentState() == TaskState.STATE.INITIALIZED ||
+						progress.getCurrentState() == TaskState.STATE.RUNNING));
 	}
 
 	/**
@@ -268,7 +273,7 @@ public abstract class AbstractTestTask implements TestTask {
 	 */
 	final void fireCanceled() throws InvalidStateTransitionException {
 		changeState(TaskState.STATE.CANCELED,
-				(progress.currentState== TaskState.STATE.CANCELING));
-		progress.stopInstant=Instant.now();
+				(progress.getCurrentState() == TaskState.STATE.CANCELING));
+		progress.stopInstant = Instant.now();
 	}
 }
