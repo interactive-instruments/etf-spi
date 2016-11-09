@@ -1,11 +1,11 @@
-/*
- * Copyright ${year} interactive instruments GmbH
+/**
+ * Copyright 2010-2016 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * you may not use this path except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,25 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package de.interactive_instruments.etf.testdriver;
 
-import de.interactive_instruments.etf.model.DependencyHolder;
-
 import java.util.*;
+
+import de.interactive_instruments.etf.model.DependencyHolder;
 
 /**
  * A dependency graph which detects cycles and returns a list in topological order
  *
  * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
  */
-public class DependencyGraph<T extends DependencyHolder<T>> {
+final public class DependencyGraph<T extends DependencyHolder<T>> {
 
 	// use linked hash map for deterministic results
 	private final Map<T, Set<T>> dependencyNodes = new LinkedHashMap<>();
 
-	public DependencyGraph() {
-	}
+	public DependencyGraph() {}
 
 	public DependencyGraph(final Collection<T> nodes) {
 		addAllDependencies(nodes);
@@ -51,19 +49,17 @@ public class DependencyGraph<T extends DependencyHolder<T>> {
 	}
 
 	private void walkAndAddDependencies(final T node, final Set<T> cycleCheck) {
-		if(node.getDependencies()!=null) {
+		if (node.getDependencies() != null) {
 			for (final T dep : node.getDependencies()) {
 				addNode(dep);
 				addEdge(node, dep);
 			}
-			node.getDependencies().stream().filter(dep ->
-					!cycleCheck.contains(dep)).forEach(dep -> {
-						cycleCheck.add(dep);
-						walkAndAddDependencies(dep, cycleCheck);
+			node.getDependencies().stream().filter(dep -> !cycleCheck.contains(dep)).forEach(dep -> {
+				cycleCheck.add(dep);
+				walkAndAddDependencies(dep, cycleCheck);
 			});
 		}
 	}
-
 
 	/**
 	 * Add a collection of objects that have dependencies
@@ -76,7 +72,7 @@ public class DependencyGraph<T extends DependencyHolder<T>> {
 	}
 
 	private boolean addNode(final T node) {
-		if(dependencyNodes.containsKey(node)) {
+		if (dependencyNodes.containsKey(node)) {
 			return false;
 		}
 		dependencyNodes.put(node, new HashSet<>());
@@ -111,8 +107,7 @@ public class DependencyGraph<T extends DependencyHolder<T>> {
 		final Set<T> cycleCheck = new HashSet<>();
 		final Set<T> expandedNodes = new HashSet<>();
 
-		reversesGraph.dependencyNodes.keySet().forEach( n ->
-				deepSearch(n, reversesGraph, orderedResult, cycleCheck, expandedNodes) );
+		reversesGraph.dependencyNodes.keySet().forEach(n -> deepSearch(n, reversesGraph, orderedResult, cycleCheck, expandedNodes));
 
 		return Collections.unmodifiableList(orderedResult);
 	}
@@ -121,9 +116,7 @@ public class DependencyGraph<T extends DependencyHolder<T>> {
 		final DependencyGraph<T> result = new DependencyGraph<T>();
 		this.dependencyNodes.keySet().forEach(result::addNode);
 
-		this.dependencyNodes.keySet().forEach( n ->
-				edgesFrom(n).forEach( e ->
-						result.addEdge(e, n) ) );
+		this.dependencyNodes.keySet().forEach(n -> edgesFrom(n).forEach(e -> result.addEdge(e, n)));
 
 		return result;
 	}
@@ -140,8 +133,7 @@ public class DependencyGraph<T extends DependencyHolder<T>> {
 		}
 		cycleCheck.add(node);
 
-		reversesGraph.edgesFrom(node).forEach( n ->
-				deepSearch(n, reversesGraph, orderedResult, cycleCheck, expandedNodes) );
+		reversesGraph.edgesFrom(node).forEach(n -> deepSearch(n, reversesGraph, orderedResult, cycleCheck, expandedNodes));
 
 		orderedResult.add(node);
 		expandedNodes.add(node);

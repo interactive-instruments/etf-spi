@@ -1,11 +1,19 @@
+/**
+ * Copyright 2010-2016 interactive instruments GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this path except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package de.interactive_instruments.etf.testdriver;
-
-import de.interactive_instruments.IFile;
-import org.slf4j.event.LoggingEvent;
-import org.slf4j.helpers.FormattingTuple;
-import org.slf4j.helpers.MarkerIgnoringBase;
-import org.slf4j.helpers.MessageFormatter;
-import org.slf4j.spi.LocationAwareLogger;
 
 import java.io.*;
 import java.text.DateFormat;
@@ -13,6 +21,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import org.slf4j.event.LoggingEvent;
+import org.slf4j.helpers.FormattingTuple;
+import org.slf4j.helpers.MarkerIgnoringBase;
+import org.slf4j.helpers.MessageFormatter;
+import org.slf4j.spi.LocationAwareLogger;
+
+import de.interactive_instruments.IFile;
 
 /**
  * Default Test Run Logger based on the slf4j SimpleLogger
@@ -55,26 +71,29 @@ public class DefaultTestRunLogger extends MarkerIgnoringBase implements TestRunL
 
 	public DefaultTestRunLogger(final IFile logDir, final String name) {
 		this.name = name;
-		this.logFile = logDir.expandPath(name+".log");
+		this.logFile = logDir.expandPath(name + ".log");
 		try {
 			final FileOutputStream fos = new FileOutputStream(logFile);
 			this.logFileStream = new PrintStream(fos);
 		} catch (FileNotFoundException e) {
-			throw new IllegalArgumentException("Can not open log file");
+			throw new IllegalArgumentException("Can not open log path");
 		}
 	}
 
-	@Override public File getLogFile() {
+	@Override
+	public File getLogFile() {
 		return logFile;
 	}
 
-	@Override public List<String> getLogMessages(final long firstMessagePos) {
+	@Override
+	public List<String> getLogMessages(final long firstMessagePos) {
 		final List<String> output = new ArrayList<>(48);
 		long skip = 0;
-		try(final BufferedReader br = new BufferedReader(new FileReader(logFile))) {
-			while(skip++<firstMessagePos && br.readLine() != null) {
+		try (final BufferedReader br = new BufferedReader(new FileReader(logFile))) {
+			while (skip++ < firstMessagePos && br.readLine() != null) {
+				// skip lines
 			}
-			for(String line; (line = br.readLine()) != null; ) {
+			for (String line; (line = br.readLine()) != null;) {
 				output.add(line);
 			}
 		} catch (IOException e) {
@@ -86,10 +105,9 @@ public class DefaultTestRunLogger extends MarkerIgnoringBase implements TestRunL
 	@Override
 	public void streamLogMessagesTo(final long position, final OutputStream outputStream) {
 		long skip = 0;
-		try(final BufferedReader br = new BufferedReader(new FileReader(logFile))) {
-			while(skip++<position && br.readLine() != null) {
-			}
-			for(String line; (line = br.readLine()) != null; ) {
+		try (final BufferedReader br = new BufferedReader(new FileReader(logFile))) {
+			while (skip++ < position && br.readLine() != null) {}
+			for (String line; (line = br.readLine()) != null;) {
 				outputStream.write(line.getBytes());
 			}
 			outputStream.flush();
