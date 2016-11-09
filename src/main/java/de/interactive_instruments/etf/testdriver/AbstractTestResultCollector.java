@@ -2,7 +2,7 @@
  * Copyright 2010-2016 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * you may not use this path except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -57,6 +57,7 @@ public abstract class AbstractTestResultCollector extends AbstractTestCollector 
 
 	private ResultCollectorState currentState = ResultCollectorState.READY;
 	private AbstractTestTaskProgress taskProgress;
+	private String testTaskResultId;
 
 	private void setState(final ResultCollectorState newState) {
 		logger.trace("Switching from state {} to state {} ", this.currentState, newState);
@@ -69,6 +70,10 @@ public abstract class AbstractTestResultCollector extends AbstractTestCollector 
 
 	abstract protected String startTestTaskResult(final String resultedFrom, final long startTimestamp) throws Exception;
 
+	@Override public String getTestTaskResultId() {
+		return testTaskResultId;
+	}
+
 	@Override
 	final public String startTestTask(final String testModelItemId, final long startTimestamp) throws IllegalArgumentException, IllegalStateException {
 		if (currentState != READY) {
@@ -76,7 +81,8 @@ public abstract class AbstractTestResultCollector extends AbstractTestCollector 
 		}
 		setState(WRITING_TEST_TASK_RESULT);
 		try {
-			return startTestTaskResult(testModelItemId, startTimestamp);
+			testTaskResultId = startTestTaskResult(testModelItemId, startTimestamp);
+			return testTaskResultId;
 		} catch (Exception e) {
 			throw new IllegalArgumentException(e);
 		}
@@ -184,6 +190,7 @@ public abstract class AbstractTestResultCollector extends AbstractTestCollector 
 				setState(TEST_MODULE_RESULT_FINISHED);
 				return endTestModuleResult(testModelItemId, status, stopTimestamp);
 			case TEST_STEP_RESULT_FINISHED:
+			case WRITING_TEST_CASE_RESULT:
 				setState(TEST_CASE_RESULT_FINISHED);
 				return endTestCaseResult(testModelItemId, status, stopTimestamp);
 			case CALLED_TEST_CASE_RESULT_FINISHED:
