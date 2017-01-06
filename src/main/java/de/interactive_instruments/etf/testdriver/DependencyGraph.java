@@ -16,8 +16,10 @@
 package de.interactive_instruments.etf.testdriver;
 
 import java.util.*;
-
 import de.interactive_instruments.etf.model.DependencyHolder;
+import de.interactive_instruments.exceptions.ExcUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A dependency graph which detects cycles and returns a list in topological order
@@ -28,6 +30,7 @@ final public class DependencyGraph<T extends DependencyHolder<T>> {
 
 	// use linked hash map for deterministic results
 	private final Map<T, Set<T>> dependencyNodes = new LinkedHashMap<>();
+	private final Logger logger = LoggerFactory.getLogger(DependencyGraph.class);
 
 	public DependencyGraph() {}
 
@@ -80,16 +83,20 @@ final public class DependencyGraph<T extends DependencyHolder<T>> {
 	}
 
 	private void addEdge(final T source, final T dest) {
-		if (!dependencyNodes.containsKey(source) || !dependencyNodes.containsKey(dest)) {
-			throw new NoSuchElementException("Source and destination dependency node must exist in dependency graph");
+		if (!dependencyNodes.containsKey(source)) {
+			throw new NoSuchElementException("Source dependency node must exist in dependency graph: "+source.toString());
 		}
+		if(!dependencyNodes.containsKey(dest)) {
+			throw new NoSuchElementException("Destination dependency node must exist in dependency graph: "+dest.toString());
+		}
+
 		dependencyNodes.get(source).add(dest);
 	}
 
 	private Set<T> edgesFrom(final T node) {
 		final Set<T> arcs = dependencyNodes.get(node);
 		if (arcs == null)
-			throw new NoSuchElementException("Source dependency node does not exist");
+			throw new NoSuchElementException("Source dependency node does not exist: "+node.toString());
 		return Collections.unmodifiableSet(arcs);
 	}
 
@@ -100,15 +107,40 @@ final public class DependencyGraph<T extends DependencyHolder<T>> {
 	 *
 	 * @return
 	 */
-	public List<T> sort() {
+	public List<T> sortIgnoreCylce() {
 		final DependencyGraph<T> reversesGraph = reverseGraph();
-
 		final List<T> orderedResult = new ArrayList<>(dependencyNodes.size());
 		final Set<T> cycleCheck = new HashSet<>();
 		final Set<T> expandedNodes = new HashSet<>();
 
-		reversesGraph.dependencyNodes.keySet().forEach(n -> deepSearch(n, reversesGraph, orderedResult, cycleCheck, expandedNodes));
+		for (final T n : reversesGraph.dependencyNodes.keySet()) {
+			try {
+				final List<T> subOrderedResult = new ArrayList<>(8);
+				deepSearch(n, reversesGraph, subOrderedResult, cycleCheck, expandedNodes);
+				orderedResult.addAll(subOrderedResult);
+			} catch (final CyclicDependencyException ign) {
+				ExcUtils.suppress(ign);
+			}
+		}
+		return Collections.unmodifiableList(orderedResult);
+	}
 
+	/**
+	 * Starts a topological sort of the dependencies and returns an ordered list.
+	 *
+	 * The index n-object, is the one object that does not depend on other objects.
+	 *
+	 * @return
+	 */
+	public List<T> sort() throws CyclicDependencyException {
+		final DependencyGraph<T> reversesGraph = reverseGraph();
+		final List<T> orderedResult = new ArrayList<>(dependencyNodes.size());
+		final Set<T> cycleCheck = new HashSet<>();
+		final Set<T> expandedNodes = new HashSet<>();
+
+		for (final T n : reversesGraph.dependencyNodes.keySet()) {
+			deepSearch(n, reversesGraph, orderedResult, cycleCheck, expandedNodes);
+		}
 		return Collections.unmodifiableList(orderedResult);
 	}
 
@@ -123,17 +155,27 @@ final public class DependencyGraph<T extends DependencyHolder<T>> {
 
 	private void deepSearch(final T node, final DependencyGraph<T> reversesGraph,
 			final List<T> orderedResult, final Set<T> cycleCheck,
-			final Set<T> expandedNodes) {
+			final Set<T> expandedNodes) throws CyclicDependencyException {
 		if (cycleCheck.contains(node)) {
 			if (expandedNodes.contains(node)) {
 				// already expanded
 				return;
 			}
-			throw new IllegalStateException("Graph contains a cycle.");
+			logger.error("Dependency graph contains a cycle. Last step: {}", node.toString());
+			logger.error("Unordered list of dependencies in the cycle check context: ");
+			for (final T t : cycleCheck) {
+				logger.error(" -|  {}", t.toString());
+				for (final T t1 : t.getDependencies()) {
+					logger.error("  -->  ", t1.toString());
+				}
+			}
+			throw new CyclicDependencyException(node);
 		}
 		cycleCheck.add(node);
 
-		reversesGraph.edgesFrom(node).forEach(n -> deepSearch(n, reversesGraph, orderedResult, cycleCheck, expandedNodes));
+		for (final T n : reversesGraph.edgesFrom(node)) {
+			deepSearch(n, reversesGraph, orderedResult, cycleCheck, expandedNodes);
+		}
 
 		orderedResult.add(node);
 		expandedNodes.add(node);

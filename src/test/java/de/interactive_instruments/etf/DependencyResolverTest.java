@@ -1,11 +1,11 @@
-/*
- * Copyright ${year} interactive instruments GmbH
+/**
+ * Copyright 2010-2016 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * you may not use this path except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package de.interactive_instruments.etf;
 
-import de.interactive_instruments.etf.dal.dto.test.ExecutableTestSuiteDto;
-import de.interactive_instruments.etf.testdriver.DependencyGraph;
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import de.interactive_instruments.etf.testdriver.CyclicDependencyException;
 import de.interactive_instruments.exceptions.ObjectWithIdNotFoundException;
 import de.interactive_instruments.exceptions.StorageException;
 import org.junit.Assert;
@@ -25,10 +28,8 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.Assert.*;
+import de.interactive_instruments.etf.dal.dto.test.ExecutableTestSuiteDto;
+import de.interactive_instruments.etf.testdriver.DependencyGraph;
 
 /**
  * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
@@ -37,7 +38,7 @@ import static org.junit.Assert.*;
 public class DependencyResolverTest {
 
 	@Test
-	public void testDependencyResolving() throws StorageException, ObjectWithIdNotFoundException {
+	public void testDependencyResolving() throws StorageException, ObjectWithIdNotFoundException, CyclicDependencyException {
 
 		final DependencyGraph<ExecutableTestSuiteDto> dependencyResolver = new DependencyGraph();
 
@@ -65,22 +66,23 @@ public class DependencyResolverTest {
 
 		ets6.addDependency(ets7);
 
-		final ArrayList<ExecutableTestSuiteDto> executableTestSuiteDtos = new ArrayList<ExecutableTestSuiteDto>() {{
-			add(ets1);
-			add(ets2);
-			add(ets3);
-			add(ets4);
-			add(ets5);
-			add(ets6);
-			add(ets7);
-		}};
+		final ArrayList<ExecutableTestSuiteDto> executableTestSuiteDtos = new ArrayList<ExecutableTestSuiteDto>() {
+			{
+				add(ets1);
+				add(ets2);
+				add(ets3);
+				add(ets4);
+				add(ets5);
+				add(ets6);
+				add(ets7);
+			}
+		};
 
 		dependencyResolver.addAllDependencies(executableTestSuiteDtos);
 		final List<ExecutableTestSuiteDto> sorted = dependencyResolver.sort();
 
 		assertNotNull(sorted);
 		assertEquals(7, sorted.size());
-
 
 		Assert.assertEquals("ETS.7", sorted.get(6).getLabel());
 		Assert.assertEquals("ETS.5", sorted.get(5).getLabel());
@@ -92,8 +94,8 @@ public class DependencyResolverTest {
 
 	}
 
-	@Test(expected = IllegalStateException.class)
-	public void testCycleDetection() throws StorageException, ObjectWithIdNotFoundException {
+	@Test(expected = CyclicDependencyException.class)
+	public void testCycleDetection() throws StorageException, ObjectWithIdNotFoundException, CyclicDependencyException {
 		final DependencyGraph<ExecutableTestSuiteDto> dependencyResolver = new DependencyGraph();
 
 		final ExecutableTestSuiteDto ets1 = CoreTestUtils.createEts(1);
@@ -101,19 +103,65 @@ public class DependencyResolverTest {
 		final ExecutableTestSuiteDto ets3 = CoreTestUtils.createEts(3);
 		final ExecutableTestSuiteDto ets4 = CoreTestUtils.createEts(4);
 
+		// Cycle
 		ets1.addDependency(ets2);
 		ets2.addDependency(ets3);
 		ets3.addDependency(ets4);
 		ets4.addDependency(ets1);
 
-		final ArrayList<ExecutableTestSuiteDto> executableTestSuiteDtos = new ArrayList<ExecutableTestSuiteDto>() {{
-			add(ets1);
-			add(ets2);
-			add(ets3);
-			add(ets4);
-		}};
+		final ArrayList<ExecutableTestSuiteDto> executableTestSuiteDtos = new ArrayList<ExecutableTestSuiteDto>() {
+			{
+				add(ets1);
+				add(ets2);
+				add(ets3);
+				add(ets4);
+			}
+		};
 
 		dependencyResolver.addAllDependencies(executableTestSuiteDtos);
 		dependencyResolver.sort();
+	}
+
+	@Test
+	public void testIgnoreCycles() throws StorageException, ObjectWithIdNotFoundException, CyclicDependencyException {
+		final DependencyGraph<ExecutableTestSuiteDto> dependencyResolver = new DependencyGraph();
+
+		final ExecutableTestSuiteDto ets1 = CoreTestUtils.createEts(1);
+		final ExecutableTestSuiteDto ets2 = CoreTestUtils.createEts(2);
+		final ExecutableTestSuiteDto ets3 = CoreTestUtils.createEts(3);
+		final ExecutableTestSuiteDto ets4 = CoreTestUtils.createEts(4);
+		final ExecutableTestSuiteDto ets5 = CoreTestUtils.createEts(5);
+		final ExecutableTestSuiteDto ets6 = CoreTestUtils.createEts(6);
+		final ExecutableTestSuiteDto ets7 = CoreTestUtils.createEts(7);
+
+		// Cycle
+		ets1.addDependency(ets2);
+		ets2.addDependency(ets3);
+		ets3.addDependency(ets4);
+		ets4.addDependency(ets1);
+
+		ets5.addDependency(ets6);
+
+		ets7.addDependency(ets1);
+
+
+		final ArrayList<ExecutableTestSuiteDto> executableTestSuiteDtos = new ArrayList<ExecutableTestSuiteDto>() {
+			{
+				add(ets1);
+				add(ets2);
+				add(ets3);
+				add(ets4);
+
+				add(ets5);
+				add(ets6);
+
+				add(ets7);
+			}
+		};
+
+		dependencyResolver.addAllDependencies(executableTestSuiteDtos);
+		final List<ExecutableTestSuiteDto> sortedList = dependencyResolver.sortIgnoreCylce();
+		System.out.println(sortedList);
+
 	}
 }
