@@ -1,11 +1,11 @@
-/*
- * Copyright ${year} interactive instruments GmbH
+/**
+ * Copyright 2010-2016 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package de.interactive_instruments.etf.dal.dao;
 
 import java.util.HashMap;
@@ -26,29 +25,28 @@ public final class DataStorageRegistry {
 
 	final Map<String, DataStorage> dataStorages = new HashMap<>();
 
-	private DataStorageRegistry() {
-	}
+	private DataStorageRegistry() {}
 
 	public void unregisterAndRelease(final String name) {
 		final DataStorage dataStorage = dataStorages.remove(name);
-		if(dataStorage==null) {
+		if (dataStorage == null) {
 			throw new IllegalArgumentException("Data Storage not found");
 		}
 		dataStorage.release();
 	}
 
 	public void register(final DataStorage dataStorage) {
-		if(dataStorage==null) {
+		if (dataStorage == null) {
 			throw new NullPointerException("Data Storage not provided");
 		}
-		if(!dataStorage.isInitialized()) {
+		if (!dataStorage.isInitialized()) {
 			throw new NullPointerException("Data Storage not initialized");
 		}
 		dataStorages.putIfAbsent(dataStorage.getClass().getName(), dataStorage);
 	}
 
 	public DataStorage get(final String name) {
-		if("default".equals(name)) {
+		if ("default".equals(name)) {
 			return dataStorages.values().iterator().next();
 		}
 		return dataStorages.get(name);

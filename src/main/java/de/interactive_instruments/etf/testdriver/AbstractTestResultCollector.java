@@ -2,7 +2,7 @@
  * Copyright 2010-2016 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this path except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -70,7 +70,8 @@ public abstract class AbstractTestResultCollector extends AbstractTestCollector 
 
 	abstract protected String startTestTaskResult(final String resultedFrom, final long startTimestamp) throws Exception;
 
-	@Override public String getTestTaskResultId() {
+	@Override
+	public String getTestTaskResultId() {
 		return testTaskResultId;
 	}
 

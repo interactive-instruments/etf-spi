@@ -2,7 +2,7 @@
  * Copyright 2010-2016 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this path except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -20,16 +20,16 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.interactive_instruments.etf.testdriver.CyclicDependencyException;
-import de.interactive_instruments.exceptions.ObjectWithIdNotFoundException;
-import de.interactive_instruments.exceptions.StorageException;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import de.interactive_instruments.etf.dal.dto.test.ExecutableTestSuiteDto;
+import de.interactive_instruments.etf.testdriver.CyclicDependencyException;
 import de.interactive_instruments.etf.testdriver.DependencyGraph;
+import de.interactive_instruments.exceptions.ObjectWithIdNotFoundException;
+import de.interactive_instruments.exceptions.StorageException;
 
 /**
  * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
@@ -143,7 +143,6 @@ public class DependencyResolverTest {
 		ets5.addDependency(ets6);
 
 		ets7.addDependency(ets1);
-
 
 		final ArrayList<ExecutableTestSuiteDto> executableTestSuiteDtos = new ArrayList<ExecutableTestSuiteDto>() {
 			{

@@ -1,11 +1,11 @@
-/*
- * Copyright ${year} interactive instruments GmbH
+/**
+ * Copyright 2010-2016 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,22 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package de.interactive_instruments.etf.testdriver;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Path;
+
+import javax.xml.xpath.XPathExpressionException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.interactive_instruments.etf.XmlUtils;
 import de.interactive_instruments.etf.dal.dao.Dao;
 import de.interactive_instruments.etf.dal.dao.StreamWriteDao;
 import de.interactive_instruments.etf.dal.dto.translation.TranslationTemplateBundleDto;
 import de.interactive_instruments.exceptions.StorageException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.xml.xpath.XPathExpressionException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.Path;
 
 /**
  * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
@@ -55,7 +56,8 @@ public final class TranslationTemplateBundleBuilder implements TypeBuildingFileV
 			this.id = XmlUtils.eval("/etf:TranslationTemplateBundle[1]/@id", path.toFile());
 		}
 
-		@Override protected TranslationTemplateBundleDto build() {
+		@Override
+		protected TranslationTemplateBundleDto build() {
 			try {
 				final File file = path.toFile();
 				final FileInputStream fileInputStream = new FileInputStream(file);
@@ -70,14 +72,15 @@ public final class TranslationTemplateBundleBuilder implements TypeBuildingFileV
 		}
 	}
 
-	@Override public TypeBuildingFileVisitor.TypeBuilderCmd<TranslationTemplateBundleDto> prepare(final Path path) {
+	@Override
+	public TypeBuildingFileVisitor.TypeBuilderCmd<TranslationTemplateBundleDto> prepare(final Path path) {
 		final String fName = path.getFileName().toString();
 		if (fName.startsWith(TRANSLATION_TEMPLATE_BUNDLE_PREFIX) &&
 				fName.endsWith(TRANSLATION_TEMPLATE_BUNDLE_SUFFIX)) {
 			try {
 				return new TranslationTemplateBuilderCmd(path, writeDao);
 			} catch (IOException | XPathExpressionException e) {
-				logger.error("Could not prepare Translation Template Bundle {} ",path,e);
+				logger.error("Could not prepare Translation Template Bundle {} ", path, e);
 			}
 		}
 		return null;
