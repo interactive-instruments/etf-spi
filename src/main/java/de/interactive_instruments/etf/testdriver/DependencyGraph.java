@@ -2,7 +2,7 @@
  * Copyright 2010-2016 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this path except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -16,17 +16,20 @@
 package de.interactive_instruments.etf.testdriver;
 
 import java.util.*;
-import de.interactive_instruments.etf.model.DependencyHolder;
-import de.interactive_instruments.exceptions.ExcUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import de.interactive_instruments.etf.model.FlatDependencyHolder;
+import de.interactive_instruments.etf.model.NestedDependencyHolder;
+import de.interactive_instruments.exceptions.ExcUtils;
 
 /**
  * A dependency graph which detects cycles and returns a list in topological order
  *
  * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
  */
-final public class DependencyGraph<T extends DependencyHolder<T>> {
+final public class DependencyGraph<T extends NestedDependencyHolder<T>> {
 
 	// use linked hash map for deterministic results
 	private final Map<T, Set<T>> dependencyNodes = new LinkedHashMap<>();
@@ -84,10 +87,10 @@ final public class DependencyGraph<T extends DependencyHolder<T>> {
 
 	private void addEdge(final T source, final T dest) {
 		if (!dependencyNodes.containsKey(source)) {
-			throw new NoSuchElementException("Source dependency node must exist in dependency graph: "+source.toString());
+			throw new NoSuchElementException("Source dependency node must exist in dependency graph: " + source.toString());
 		}
-		if(!dependencyNodes.containsKey(dest)) {
-			throw new NoSuchElementException("Destination dependency node must exist in dependency graph: "+dest.toString());
+		if (!dependencyNodes.containsKey(dest)) {
+			throw new NoSuchElementException("Destination dependency node must exist in dependency graph: " + dest.toString());
 		}
 
 		dependencyNodes.get(source).add(dest);
@@ -96,7 +99,7 @@ final public class DependencyGraph<T extends DependencyHolder<T>> {
 	private Set<T> edgesFrom(final T node) {
 		final Set<T> arcs = dependencyNodes.get(node);
 		if (arcs == null)
-			throw new NoSuchElementException("Source dependency node does not exist: "+node.toString());
+			throw new NoSuchElementException("Source dependency node does not exist: " + node.toString());
 		return Collections.unmodifiableSet(arcs);
 	}
 

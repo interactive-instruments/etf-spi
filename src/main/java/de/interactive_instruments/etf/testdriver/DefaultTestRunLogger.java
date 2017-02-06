@@ -2,7 +2,7 @@
  * Copyright 2010-2016 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this path except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -61,7 +61,7 @@ public class DefaultTestRunLogger extends MarkerIgnoringBase implements TestRunL
 	private static final int LOG_LEVEL_ERROR = LocationAwareLogger.ERROR_INT;
 
 	private static final boolean SHOW_DATE_TIME = true;
-	private static final String DATE_TIME_FORMAT_STR = "yyyy-MM-dd'T'HH:mm:ss";
+	private static final String DATE_TIME_FORMAT_STR = "dd.MM.yyyy HH:mm:ss";
 	private static final DateFormat DATE_FORMATTER = new SimpleDateFormat(DATE_TIME_FORMAT_STR);
 	private static final boolean SHOW_THREAD_NAME = false;
 	private static final boolean SHOW_LOG_NAME = false;
@@ -161,7 +161,8 @@ public class DefaultTestRunLogger extends MarkerIgnoringBase implements TestRunL
 			buf.append("DEBUG");
 			break;
 		case LOG_LEVEL_INFO:
-			buf.append("INFO");
+			// buf.append("INFO");
+			buf.append("-");
 			break;
 		case LOG_LEVEL_WARN:
 			buf.append(WARN_LEVEL_STRING);

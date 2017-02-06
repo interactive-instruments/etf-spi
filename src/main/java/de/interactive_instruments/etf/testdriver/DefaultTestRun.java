@@ -2,7 +2,7 @@
  * Copyright 2010-2016 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this path except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -24,7 +24,10 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.slf4j.LoggerFactory;
+
 import de.interactive_instruments.IFile;
+import de.interactive_instruments.LogUtils;
 import de.interactive_instruments.TimeUtils;
 import de.interactive_instruments.etf.dal.dto.result.TestTaskResultDto;
 import de.interactive_instruments.etf.dal.dto.run.TestRunDto;
@@ -64,29 +67,32 @@ final class DefaultTestRun implements TestRun {
 	private class RunProgress implements TaskProgress {
 		@Override
 		public long getMaxSteps() {
-			if (maxSteps == -1) {
-				maxSteps = 1;
-				if (testRunDto.getTestTasks() != null) {
-					for (int i = 0; i < testRunDto.getTestTasks().size(); i++) {
-						long max = 0;
-						if (testTasks != null && testTasks.get(currentRunIndex) != null && testTasks.get(currentRunIndex).getProgress() != null) {
-							max = testTasks.get(currentRunIndex).getProgress().getMaxSteps();
-						}
-						if (max <= 0) {
-							max += testRunDto.getTestTasks().get(i).getExecutableTestSuite().getAssertionsSize();
-						}
-						maxSteps += max;
+			// if (maxSteps == -1) {
+			maxSteps = 0;
+			if (testRunDto.getTestTasks() != null) {
+				for (int i = 0; i < testRunDto.getTestTasks().size(); i++) {
+					long max = 0;
+					if (testTasks != null && currentRunIndex < testTasks.size() && testTasks.get(currentRunIndex).getProgress() != null) {
+						max = testTasks.get(currentRunIndex).getProgress().getMaxSteps();
 					}
+					if (max <= 0) {
+						max += testRunDto.getTestTasks().get(i).getExecutableTestSuite().getAssertionsSize();
+					}
+					maxSteps += max;
 				}
 			}
+			// }
 			return maxSteps;
 		}
 
 		@Override
 		public long getCurrentStepsCompleted() {
-
-			return overallStepsCompleted +
-					testTasks.get(currentRunIndex).getProgress().getCurrentStepsCompleted();
+			if (currentRunIndex < testTasks.size()) {
+				return overallStepsCompleted +
+						testTasks.get(currentRunIndex).getProgress().getCurrentStepsCompleted();
+			} else {
+				return overallStepsCompleted;
+			}
 		}
 
 		@Override
@@ -248,12 +254,12 @@ final class DefaultTestRun implements TestRun {
 
 	@Override
 	public final void cancel() throws InvalidStateTransitionException {
-		testRunLogger.info("Canceling TestRunTask." + getId());
+		testRunLogger.info("Canceling TestRun." + getId());
 		fireCanceling();
 		doCancel();
 		fireCanceled();
 		release();
-		testRunLogger.info("TestRunTask." + getId() + " canceled");
+		testRunLogger.info("TestRun." + getId() + " canceled");
 	}
 
 	protected final void handleException(final Throwable e) {
@@ -292,7 +298,7 @@ final class DefaultTestRun implements TestRun {
 	public void release() {
 		try {
 			fireFinalizing();
-		} catch (InvalidStateTransitionException e) {
+		} catch (final InvalidStateTransitionException e) {
 			ExcUtils.suppress(e);
 		}
 		for (int i = currentRunIndex; i < testTasks.size(); i++) {
@@ -331,7 +337,8 @@ final class DefaultTestRun implements TestRun {
 		if (!reqCondition || this.currentState == state) {
 			final String errorMsg = "Illegal state transition in task " + this.getId() +
 					" from " + this.currentState + " to " + state;
-			testRunLogger.error(errorMsg);
+			// testRunLogger.error(errorMsg);
+			LoggerFactory.getLogger(this.getClass()).error(LogUtils.FATAL_MESSAGE, errorMsg);
 			throw new InvalidStateTransitionException(errorMsg);
 		}
 

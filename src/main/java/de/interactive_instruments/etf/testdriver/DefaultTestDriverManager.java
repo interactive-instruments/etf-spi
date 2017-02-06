@@ -2,7 +2,7 @@
  * Copyright 2010-2016 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this path except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -116,6 +116,17 @@ public class DefaultTestDriverManager implements TestDriverManager {
 		initialized = false;
 	}
 
+	private static void addUnique(final TestTaskDto newTestTask, final List<TestTaskDto> reorganizedTestTasks) {
+		for (final TestTaskDto testTask : reorganizedTestTasks) {
+			if (testTask.getTestObject().getId().equals(newTestTask.getTestObject().getId()) &&
+					testTask.getExecutableTestSuite().getId().equals(newTestTask.getExecutableTestSuite().getId())) {
+				// todo compare parameters?
+				return;
+			}
+		}
+		reorganizedTestTasks.add(newTestTask);
+	}
+
 	@Override
 	public TestRun createTestRun(final TestRunDto testRunDto, final TestResultCollectorFactory collectorFactory) throws TestRunInitializationException {
 		try {
@@ -157,7 +168,7 @@ public class DefaultTestDriverManager implements TestDriverManager {
 				// Create dependency graph
 				final DependencyGraph<ExecutableTestSuiteDto> dependencyGraph = new DependencyGraph<>(etsLookupSet.getResolved());
 				// does not include the base ETS
-				final List<ExecutableTestSuiteDto> sortedEts = dependencyGraph.sort();
+				final List<ExecutableTestSuiteDto> sortedEts = dependencyGraph.sortIgnoreCylce();
 
 				// Add new test tasks
 				for (int i = sortedEts.size() - 1; i >= 0; i--) {
@@ -166,12 +177,10 @@ public class DefaultTestDriverManager implements TestDriverManager {
 					testTaskCopy.setExecutableTestSuite(sortedEts.get(i));
 					testTaskCopy.setTestTaskResult(null);
 					testTaskCopy.setParent(testRunDto);
-					reorganizedTestTasks.add(testTaskCopy);
+					addUnique(testTaskCopy, reorganizedTestTasks);
 				}
 			}
 			testRunDto.setTestTasks(Collections.unmodifiableList(reorganizedTestTasks));
-
-			// TODO optimize out tasks with equal TO, ETS and parameters
 
 			if (testRunDto.getTestTasks().size() == 1) {
 				testRunLogger.info("Preparing 1 Test Task:");
