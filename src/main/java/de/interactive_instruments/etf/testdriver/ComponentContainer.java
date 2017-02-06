@@ -2,7 +2,7 @@
  * Copyright 2010-2016 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this path except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -49,13 +49,23 @@ final class ComponentContainer implements Releasable {
 	private Class testDriverInitializerClass;
 	private ComponentClassLoader cl;
 	private Logger logger = LoggerFactory.getLogger(ComponentContainer.class);
-	private List<String> disallowedJars = new ArrayList<String>() {{
-		add("xerces");
-		add("xercesImpl");
-		add("xml-apis");
-		add("etf-core");
-		add("etf-spi");
-	}};
+	private List<String> disallowedJars = new ArrayList<String>() {
+		{
+			// Disallow Xerces
+			add("xerces");
+			add("xercesImpl");
+			add("xml-apis");
+			// Disallow logging frameworks
+			add("slf4j-api");
+			add("slf4j-nop");
+			add("slf4j-log4j");
+			add("logback-classic");
+			add("logback-core");
+			// Disallow etf-core and etf-spi
+			add("etf-core");
+			add("etf-spi");
+		}
+	};
 
 	ComponentContainer(final File componentJar) throws ComponentLoadingException {
 		this.componentJar = componentJar;
@@ -79,7 +89,7 @@ final class ComponentContainer implements Releasable {
 				}
 				if (testDriverInitializerClass == null) {
 					// is the test driver using the same etf-model?
-					throw new ComponentLoadingException("Failed to load "+componentJar.toPath()+
+					throw new ComponentLoadingException("Failed to load " + componentJar.toPath() +
 							" because no ComponentInitializer annotated class has been found");
 				}
 			} catch (NullPointerException | NoClassDefFoundError | ClassNotFoundException | IOException e) {

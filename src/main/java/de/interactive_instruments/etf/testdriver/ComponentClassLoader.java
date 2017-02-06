@@ -2,7 +2,7 @@
  * Copyright 2010-2016 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this path except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -19,7 +19,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -27,14 +26,13 @@ import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import de.interactive_instruments.CLUtils;
-import de.interactive_instruments.UriUtils;
-import de.interactive_instruments.exceptions.ExcUtils;
-import jdk.nashorn.internal.runtime.URIUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.interactive_instruments.CLUtils;
 import de.interactive_instruments.IFile;
+import de.interactive_instruments.UriUtils;
+import de.interactive_instruments.exceptions.ExcUtils;
 
 /**
  * A class loader used for test components.
@@ -95,7 +93,7 @@ final class ComponentClassLoader extends ClassLoader implements Closeable {
 		private final ParentDelegationClassClassLoader realParent;
 		private final Logger logger;
 		private Collection<ClassLoader> dependencyClassLoaders;
-		private IFile tmpExtractedSubPackagedJars;
+		private IFile jarExtractionDir;
 		private final Set<String> disallowedJarNames;
 
 		ChildURLClassLoader(final URL[] urls, final ParentDelegationClassClassLoader realParent, final Set<String> disallowedJarNames, final Logger logger) {
@@ -108,10 +106,10 @@ final class ComponentClassLoader extends ClassLoader implements Closeable {
 			}
 		}
 
-		private void ensureTempDir() throws IOException {
-			if(tmpExtractedSubPackagedJars==null) {
-				tmpExtractedSubPackagedJars = IFile.createTempDir("etf_CL"+hashCode());
-				logger.trace("Created temporary directory {}", tmpExtractedSubPackagedJars);
+		private void ensureExtractionDir() throws IOException {
+			if (jarExtractionDir == null) {
+				jarExtractionDir = IFile.createTempDir("etf_CL" + hashCode());
+				logger.trace("Created temporary directory {}", jarExtractionDir);
 			}
 		}
 
@@ -126,7 +124,7 @@ final class ComponentClassLoader extends ClassLoader implements Closeable {
 				}
 				return super.findClass(name);
 			} catch (final ClassNotFoundException ignore) {
-				if(dependencyClassLoaders!=null) {
+				if (dependencyClassLoaders != null) {
 					for (final ClassLoader dependencyClassLoader : dependencyClassLoaders) {
 						try {
 							return dependencyClassLoader.loadClass(name);
@@ -146,7 +144,7 @@ final class ComponentClassLoader extends ClassLoader implements Closeable {
 			if (resource != null) {
 				return resource;
 			} else {
-				if(dependencyClassLoaders!=null) {
+				if (dependencyClassLoaders != null) {
 					for (final ClassLoader dependencyClassLoader : dependencyClassLoaders) {
 						final URL resource2 = dependencyClassLoader.getResource(name);
 						if (resource2 != null) {
@@ -165,7 +163,7 @@ final class ComponentClassLoader extends ClassLoader implements Closeable {
 			if (stream != null) {
 				return stream;
 			} else {
-				if(dependencyClassLoaders!=null) {
+				if (dependencyClassLoaders != null) {
 					for (final ClassLoader dependencyClassLoader : dependencyClassLoaders) {
 						final InputStream stream2 = dependencyClassLoader.getResourceAsStream(name);
 						if (stream2 != null) {
@@ -177,19 +175,18 @@ final class ComponentClassLoader extends ClassLoader implements Closeable {
 			}
 		}
 
-
 		/**
 		 * Load a JAR from an URL
 		 *
 		 * @param url JAR URL
 		 */
 		void addUrl(final URL url) {
-			if(disallowedJarNames==null || !disallowedJarNames.contains(
+			if (disallowedJarNames == null || !disallowedJarNames.contains(
 					IFile.getFilenameWithoutExtAndVersion(UriUtils.lastSegment(url.getPath())))) {
 				logger.trace("Adding jar {}", url);
 				addURL(url);
 				addSubPackagedLibJars(url);
-			}else if(logger.isTraceEnabled()) {
+			} else if (logger.isTraceEnabled()) {
 				logger.trace("Disallowed jar {}", url);
 			}
 		}
@@ -200,7 +197,7 @@ final class ComponentClassLoader extends ClassLoader implements Closeable {
 		 * @param classLoaders
 		 */
 		void addDependencyClassLoaders(final Collection<ClassLoader> classLoaders) {
-			dependencyClassLoaders=classLoaders;
+			dependencyClassLoaders = classLoaders;
 		}
 
 		/**
@@ -209,7 +206,7 @@ final class ComponentClassLoader extends ClassLoader implements Closeable {
 		 * @param classLoader
 		 */
 		void addDependencyClassLoader(final ClassLoader classLoader) {
-			if(dependencyClassLoaders==null) {
+			if (dependencyClassLoaders == null) {
 				dependencyClassLoaders = new ArrayList<>(2);
 			}
 			dependencyClassLoaders.add(classLoader);
@@ -224,18 +221,18 @@ final class ComponentClassLoader extends ClassLoader implements Closeable {
 			try {
 				final JarFile jar = new JarFile(UriUtils.download(jarUrl.toURI()));
 				final Enumeration<JarEntry> entries = jar.entries();
-				while(entries.hasMoreElements()) {
+				while (entries.hasMoreElements()) {
 					final JarEntry entry = entries.nextElement();
-					if(entry.getName().startsWith("lib/") && entry.getName().endsWith(".jar")) {
-						ensureTempDir();
-						final IFile libFile = new IFile(tmpExtractedSubPackagedJars, entry.getName().substring(4));
+					if (entry.getName().startsWith("lib/") && entry.getName().endsWith(".jar")) {
+						ensureExtractionDir();
+						final IFile libFile = new IFile(jarExtractionDir, entry.getName().substring(4));
 						libFile.write(jar.getInputStream(entry));
 						logger.trace("Adding sub packaged library {}", libFile);
 						addURL(libFile.toURI().toURL());
 					}
 				}
 			} catch (URISyntaxException | IOException e) {
-				throw new IllegalArgumentException("Cannot add sub packaged JARs from JAR "+jarUrl, e);
+				throw new IllegalArgumentException("Cannot add sub packaged JARs from JAR " + jarUrl, e);
 			}
 		}
 
@@ -248,7 +245,7 @@ final class ComponentClassLoader extends ClassLoader implements Closeable {
 	 */
 	ComponentClassLoader(final URL jar) {
 		super(Thread.currentThread().getContextClassLoader());
-		childClassLoader = new ChildURLClassLoader(new URL[] { jar },
+		childClassLoader = new ChildURLClassLoader(new URL[]{jar},
 				new ParentDelegationClassClassLoader(this.getParent(), logger), null, logger);
 	}
 
@@ -260,7 +257,7 @@ final class ComponentClassLoader extends ClassLoader implements Closeable {
 	 */
 	ComponentClassLoader(final URL jar, final Set<String> disallowedJarNames) {
 		super(Thread.currentThread().getContextClassLoader());
-		childClassLoader = new ChildURLClassLoader(new URL[] { jar },
+		childClassLoader = new ChildURLClassLoader(new URL[]{jar},
 				new ParentDelegationClassClassLoader(this.getParent(), logger), disallowedJarNames, logger);
 	}
 
@@ -320,7 +317,7 @@ final class ComponentClassLoader extends ClassLoader implements Closeable {
 			return stream;
 		} else {
 			logger.trace("ComponentCL: Loading of resource {} failed, trying class loader {}",
-				name, super.getClass().getSimpleName());
+					name, super.getClass().getSimpleName());
 			return super.getResourceAsStream(name);
 		}
 	}
@@ -359,10 +356,10 @@ final class ComponentClassLoader extends ClassLoader implements Closeable {
 	public void addJars(final IFile dir) throws IOException {
 		dir.expectDirIsReadable();
 		final File[] files = dir.listFiles();
-		if(files!=null) {
+		if (files != null) {
 			for (int i = 0; i < files.length; i++) {
 				final File file = files[i];
-				if(file.getName().toLowerCase().endsWith(".jar")) {
+				if (file.getName().toLowerCase().endsWith(".jar")) {
 					addUrl(file.toURI().toURL());
 				}
 			}
