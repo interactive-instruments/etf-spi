@@ -1,11 +1,11 @@
-/*
- * Copyright ${year} interactive instruments GmbH
+/**
+ * Copyright 2010-2016 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +15,8 @@
  */
 package de.interactive_instruments.etf.testdriver;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
@@ -22,8 +24,13 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.interactive_instruments.IFile;
+import de.interactive_instruments.LogUtils;
 import de.interactive_instruments.etf.dal.dto.Dto;
-import de.interactive_instruments.etf.model.DependencyHolder;
+import de.interactive_instruments.etf.model.NestedDependencyHolder;
 
 /**
  * Walks through a directory and creates DTO types with the associated {@link TypeBuilder}s. Supports type dependency resolution.
@@ -33,6 +40,8 @@ import de.interactive_instruments.etf.model.DependencyHolder;
  * @author herrmann@interactive-instruments.de.
  */
 public final class TypeBuildingFileVisitor implements FileVisitor<Path> {
+
+	private static Logger logger = LoggerFactory.getLogger(TypeBuildingFileVisitor.class);
 
 	@FunctionalInterface
 	public interface TypeBuilder<T extends Dto> {
@@ -46,7 +55,7 @@ public final class TypeBuildingFileVisitor implements FileVisitor<Path> {
 		TypeBuilderCmd<T> prepare(final Path file);
 	}
 
-	public abstract static class TypeBuilderCmd<T extends Dto> implements DependencyHolder<TypeBuilderCmd<T>> {
+	public abstract static class TypeBuilderCmd<T extends Dto> implements NestedDependencyHolder<TypeBuilderCmd<T>> {
 		protected final Path path;
 		protected String id;
 		// HashMap to allow null values -which are overwritten with setKnownBuilder()
@@ -66,19 +75,20 @@ public final class TypeBuildingFileVisitor implements FileVisitor<Path> {
 			dependencies.put(id, null);
 		}
 
-		@Override final public Collection<TypeBuilderCmd<T>> getDependencies() {
-			return dependencies!=null ? dependencies.values() : null;
+		@Override
+		final public Collection<TypeBuilderCmd<T>> getDependencies() {
+			return dependencies != null ? dependencies.values() : null;
 		}
 
 		final void removeAlreadyBuildedDependencies(final Set<String> skipIds) {
 			dependencies.keySet().removeAll(skipIds);
 		}
 
-		final void setKnownBuilders(final  Map<String, TypeBuilderCmd> builders) {
-			dependencies.entrySet().forEach( e -> {
-						final TypeBuilderCmd<T> builder = builders.get(e.getKey());
-						e.setValue(Objects.requireNonNull(builder,
-								"Reference Object with ID "+e.getKey()+", defined in "+ path +" not found!"));
+		final void setKnownBuilders(final Map<String, TypeBuilderCmd> builders) {
+			dependencies.entrySet().forEach(e -> {
+				final TypeBuilderCmd<T> builder = builders.get(e.getKey());
+				e.setValue(Objects.requireNonNull(builder,
+						"Referenced Object with ID " + e.getKey() + ", defined in " + path + " not found!"));
 			});
 		}
 	}
@@ -104,7 +114,7 @@ public final class TypeBuildingFileVisitor implements FileVisitor<Path> {
 
 	@Override
 	public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
-		if(dir.getFileName().toString().startsWith(".")) {
+		if (dir.getFileName().toString().startsWith(".")) {
 			return FileVisitResult.SKIP_SUBTREE;
 		}
 		return FileVisitResult.CONTINUE;
@@ -112,18 +122,31 @@ public final class TypeBuildingFileVisitor implements FileVisitor<Path> {
 
 	@Override
 	public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+		if (file.toString().endsWith(".jar") || file.toString().endsWith(".zip")) {
+			// extract zip and terminate this run
+			final IFile zip = new IFile(file.toString());
+			final IFile extDir = new IFile(new IFile(file.toString()).getFilenameWithoutExt());
+			extDir.mkdir();
+			extDir.expectDirIsWritable();
+			logger.info("Extracting packaged types to {}", extDir.toString());
+			zip.unzipTo(extDir, pathname -> !pathname.toString().contains("META-INF"));
+			return FileVisitResult.TERMINATE;
+		}
+
 		for (final TypeBuilder builder : typeBuilders) {
 			final TypeBuilderCmd<? extends Dto> typeBuilderCmd = builder.prepare(file);
 			if (typeBuilderCmd != null) {
 				final TypeBuilderCmd duplicateCheck = typeBuilderCmds.get(
-						Objects.requireNonNull(typeBuilderCmd.getId(), "TypeBuilder "+typeBuilderCmd+" returned NULL ID"));
-				if(duplicateCheck!=null) {
-					throw new IllegalStateException("Type with ID \"" + typeBuilderCmd.getId() +
-							"\" has already been created during this refresh run of the Test Driver. "
-							+ "Types with duplicate Ids created from path \"" +
-							file + "\" and path \"" + duplicateCheck.path + "\" !");
+						Objects.requireNonNull(typeBuilderCmd.getId(), "TypeBuilder " + typeBuilderCmd + " returned NULL ID"));
+				if (duplicateCheck != null) {
+					logger.error(LogUtils.FATAL_MESSAGE, "Type with ID \"{}\" " +
+							" has already been created during this refresh run of the Test Driver. "
+							+ "Types with duplicate Ids created from path \"{}\" "
+							+ " and path \"{}\" !",
+							typeBuilderCmd.getId(), file, duplicateCheck.path);
+				} else {
+					typeBuilderCmds.put(typeBuilderCmd.getId(), typeBuilderCmd);
 				}
-				typeBuilderCmds.put(typeBuilderCmd.getId(), typeBuilderCmd);
 				break;
 			}
 		}
@@ -136,27 +159,32 @@ public final class TypeBuildingFileVisitor implements FileVisitor<Path> {
 	 * @return map containing path paths as keys and DTOs as values
 	 */
 	public Map<Path, Dto> buildAll() {
-		if(typeBuilderCmds.isEmpty()) {
+		if (typeBuilderCmds.isEmpty()) {
 			return null;
 		}
 		final Collection<TypeBuilderCmd<? extends Dto>> typeBuilderCmdColl = typeBuilderCmds.values();
 
 		// Remove builders for already build types
-		if(skipIds!=null) {
+		if (skipIds != null) {
 			typeBuilderCmdColl.forEach(b -> b.removeAlreadyBuildedDependencies(skipIds));
 		}
 
 		// Set all known builders
 		final Map<String, TypeBuilderCmd> builders = Collections.unmodifiableMap(typeBuilderCmds);
-		typeBuilderCmdColl.forEach( b -> b.setKnownBuilders(builders));
+		typeBuilderCmdColl.forEach(b -> b.setKnownBuilders(builders));
 
 		// Create a dependency graph and build the types in the right order
 		final DependencyGraph dependencyGraph = new DependencyGraph(typeBuilderCmdColl);
-		final List<TypeBuilderCmd<? extends Dto>> orderedTypeBuilderCmds = dependencyGraph.sort();
+		final List<TypeBuilderCmd<? extends Dto>> orderedTypeBuilderCmds = dependencyGraph.sortIgnoreCylce();
 		final Map<Path, Dto> buildTypes = new TreeMap<>();
 		for (int i = orderedTypeBuilderCmds.size() - 1; i >= 0; i--) {
-			final Dto dto = orderedTypeBuilderCmds.get(i).build();
-			buildTypes.put(orderedTypeBuilderCmds.get(i).path.toAbsolutePath(), dto);
+			try {
+				final Dto dto = orderedTypeBuilderCmds.get(i).build();
+				buildTypes.put(orderedTypeBuilderCmds.get(i).path.toAbsolutePath(), dto);
+			} catch (Exception e) {
+				logger.error(LogUtils.FATAL_MESSAGE, "Failed to build type \"{}\" from file {} :",
+						orderedTypeBuilderCmds.get(i).id, orderedTypeBuilderCmds.get(i).path, e);
+			}
 		}
 		return buildTypes;
 	}

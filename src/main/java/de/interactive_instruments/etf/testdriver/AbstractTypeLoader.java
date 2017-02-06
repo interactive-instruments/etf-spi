@@ -1,11 +1,11 @@
-/*
- * Copyright ${year} interactive instruments GmbH
+/**
+ * Copyright 2010-2016 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,8 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package de.interactive_instruments.etf.testdriver;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.WatchEvent;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.interactive_instruments.Configurable;
 import de.interactive_instruments.IFile;
@@ -33,16 +43,6 @@ import de.interactive_instruments.exceptions.StorageException;
 import de.interactive_instruments.exceptions.config.ConfigurationException;
 import de.interactive_instruments.io.FileChangeListener;
 import de.interactive_instruments.io.RecursiveDirWatcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.WatchEvent;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
@@ -53,13 +53,12 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 	private boolean initialized = false;
-	protected IFile etsDir;
+	protected IFile watchDir;
 	private RecursiveDirWatcher watcher;
 	private final List<TypeBuildingFileVisitor.TypeBuilder<? extends Dto>> builders;
 
 	// Path -> Dto
-	private final Map<Path, Dto> propagatedDtos = new LinkedHashMap<>();
-	private final EidMap<ExecutableTestSuiteDto> etsCache = new DefaultEidMap<>(new HashMap<>(32));
+	protected final Map<Path, Dto> propagatedDtos = new LinkedHashMap<>();
 	private final Set<String> registeredTypeIds = new HashSet<>();
 
 	protected AbstractTypeLoader(final DataStorage dataStorageCallback,
@@ -68,47 +67,42 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 		this.builders = builders;
 	}
 
+	protected abstract void doBeforeDeregister(final Dto dto);
+
 	private void deregisterTypes(final Collection<Dto> values) {
 		values.stream().forEach(dto -> {
-					registeredTypeIds.remove(dto.getId().getId());
+			doBeforeDeregister(dto);
 
-					if(dto instanceof ExecutableTestSuiteDto) {
-						etsCache.remove(dto.getId());
-					}
+			registeredTypeIds.remove(dto.getId().getId());
 
-					try {
-						((WriteDao) dataStorageCallback.getDao(dto.getClass())).delete(dto.getId());
-					} catch (ObjectWithIdNotFoundException | StorageException e) {
-						logger.error("Could not deregister {} : ", dto.getDescriptiveLabel(), e);
-					}
-				}
-		);
+			try {
+				((WriteDao) dataStorageCallback.getDao(dto.getClass())).delete(dto.getId());
+			} catch (ObjectWithIdNotFoundException | StorageException e) {
+				logger.error("Could not deregister {} : ", dto.getDescriptiveLabel(), e);
+			}
+		});
 	}
+
+	protected abstract void doAfterRegister(final Collection<Dto> dtos);
 
 	private void registerTypes(final Collection<Dto> values) {
 		// Register ID
 		values.stream().forEach(dto -> registeredTypeIds.add(dto.getId().getId()));
-
-		// Add ETS to ETS cache
-		values.stream().filter(dto ->
-				dto instanceof ExecutableTestSuiteDto).forEach(
-				dto -> etsCache.put(dto.getId(), (ExecutableTestSuiteDto) dto));
+		doAfterRegister(values);
 	}
 
 	@Override
 	public final synchronized void filesChanged(final Map<Path, WatchEvent.Kind> eventMap, final Set<Path> dirs) {
-		final Set<Path> parentLessDirs = dirs.stream().filter(dir ->
-				!dirs.contains(dir.getParent())).collect(Collectors.toSet());
+		final Set<Path> parentLessDirs = dirs.stream().filter(dir -> !dirs.contains(dir.getParent())).collect(Collectors.toSet());
 
 		// Check which files were removed
-		final List<Dto> dtosToRemove = propagatedDtos.entrySet().stream().filter(entry ->
-				!Files.exists(entry.getKey())).map(Map.Entry::getValue).collect(Collectors.toList());
-		if(!dtosToRemove.isEmpty()) {
+		final List<Dto> dtosToRemove = propagatedDtos.entrySet().stream().filter(entry -> !Files.exists(entry.getKey())).map(Map.Entry::getValue).collect(Collectors.toList());
+		if (!dtosToRemove.isEmpty()) {
 			deregisterTypes(dtosToRemove);
 		}
 
-		// Create ETS
-		final TypeBuildingFileVisitor visitor = new TypeBuildingFileVisitor(builders,registeredTypeIds);
+		// Create Types
+		final TypeBuildingFileVisitor visitor = new TypeBuildingFileVisitor(builders, registeredTypeIds);
 		parentLessDirs.forEach(d -> {
 			logger.trace("Watch service reports changes in directory: " + d.toString());
 			try {
@@ -118,14 +112,13 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 			}
 		});
 		final Map<Path, Dto> newPropagatedDtos = visitor.buildAll();
-		if(newPropagatedDtos!=null) {
+		if (newPropagatedDtos != null) {
 			registerTypes(newPropagatedDtos.values());
 			propagatedDtos.putAll(newPropagatedDtos);
 		}
 	}
 
 	protected abstract void doInit() throws ConfigurationException, InitializationException, InvalidStateTransitionException;
-
 
 	@Override
 	public final void init() throws InitializationException, InvalidStateTransitionException, ConfigurationException {
@@ -135,11 +128,11 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 
 		doInit();
 
-		// Parse ets dir
-		filesChanged(null, Collections.singleton(etsDir.toPath()));
+		// Initial parse dir
+		filesChanged(null, Collections.singleton(watchDir.toPath()));
 
-		// Watch the ets directory
-		watcher = RecursiveDirWatcher.create(this.etsDir.toPath(), this, path -> !path.getFileName().startsWith("."));
+		// Start watching the directory
+		watcher = RecursiveDirWatcher.create(this.watchDir.toPath(), this, path -> !path.getFileName().startsWith("."));
 		try {
 			watcher.start();
 		} catch (IOException e) {
@@ -155,17 +148,11 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 		return this.initialized;
 	}
 
-	public Collection<ExecutableTestSuiteDto> getExecutableTestSuites() {
-		return etsCache.values();
-	}
-
-	public ExecutableTestSuiteDto getExecutableTestSuiteById(final EID id) {
-		return etsCache.get(id);
-	}
+	protected abstract void doRelease();
 
 	@Override
 	public void release() {
-		this.etsCache.clear();
+		doRelease();
 		this.propagatedDtos.clear();
 		this.watcher.release();
 	}
