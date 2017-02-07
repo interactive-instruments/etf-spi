@@ -15,27 +15,12 @@
  */
 package de.interactive_instruments.etf.testdriver;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.WatchEvent;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.interactive_instruments.Configurable;
 import de.interactive_instruments.IFile;
 import de.interactive_instruments.Releasable;
 import de.interactive_instruments.etf.dal.dao.DataStorage;
 import de.interactive_instruments.etf.dal.dao.WriteDao;
 import de.interactive_instruments.etf.dal.dto.Dto;
-import de.interactive_instruments.etf.dal.dto.test.ExecutableTestSuiteDto;
-import de.interactive_instruments.etf.model.DefaultEidMap;
-import de.interactive_instruments.etf.model.EID;
-import de.interactive_instruments.etf.model.EidMap;
 import de.interactive_instruments.exceptions.InitializationException;
 import de.interactive_instruments.exceptions.InvalidStateTransitionException;
 import de.interactive_instruments.exceptions.ObjectWithIdNotFoundException;
@@ -43,6 +28,16 @@ import de.interactive_instruments.exceptions.StorageException;
 import de.interactive_instruments.exceptions.config.ConfigurationException;
 import de.interactive_instruments.io.FileChangeListener;
 import de.interactive_instruments.io.RecursiveDirWatcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.WatchEvent;
+import java.util.*;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.stream.Collectors;
 
 /**
  * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
@@ -59,7 +54,9 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 
 	// Path -> Dto
 	protected final Map<Path, Dto> propagatedDtos = new LinkedHashMap<>();
-	private final Set<String> registeredTypeIds = new HashSet<>();
+
+	// Synced between all AbstractTypeLoaders
+	private final static Set<String> globalRegisteredTypeIds = new ConcurrentSkipListSet<>();
 
 	protected AbstractTypeLoader(final DataStorage dataStorageCallback,
 			final List<TypeBuildingFileVisitor.TypeBuilder<? extends Dto>> builders) {
@@ -73,7 +70,7 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 		values.stream().forEach(dto -> {
 			doBeforeDeregister(dto);
 
-			registeredTypeIds.remove(dto.getId().getId());
+			globalRegisteredTypeIds.remove(dto.getId().getId());
 
 			try {
 				((WriteDao) dataStorageCallback.getDao(dto.getClass())).delete(dto.getId());
@@ -87,7 +84,7 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 
 	private void registerTypes(final Collection<Dto> values) {
 		// Register ID
-		values.stream().forEach(dto -> registeredTypeIds.add(dto.getId().getId()));
+		values.stream().forEach(dto -> globalRegisteredTypeIds.add(dto.getId().getId()));
 		doAfterRegister(values);
 	}
 
@@ -96,13 +93,16 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 		final Set<Path> parentLessDirs = dirs.stream().filter(dir -> !dirs.contains(dir.getParent())).collect(Collectors.toSet());
 
 		// Check which files were removed
-		final List<Dto> dtosToRemove = propagatedDtos.entrySet().stream().filter(entry -> !Files.exists(entry.getKey())).map(Map.Entry::getValue).collect(Collectors.toList());
+		final List<Dto> dtosToRemove = propagatedDtos.entrySet().stream().filter(entry ->
+				!Files.exists(entry.getKey())).map(Map.Entry::getValue).collect(Collectors.toList());
 		if (!dtosToRemove.isEmpty()) {
 			deregisterTypes(dtosToRemove);
 		}
 
+		doBeforeVisit(dirs);
+
 		// Create Types
-		final TypeBuildingFileVisitor visitor = new TypeBuildingFileVisitor(builders, registeredTypeIds);
+		final TypeBuildingFileVisitor visitor = new TypeBuildingFileVisitor(builders, globalRegisteredTypeIds);
 		parentLessDirs.forEach(d -> {
 			logger.trace("Watch service reports changes in directory: " + d.toString());
 			try {
@@ -117,6 +117,8 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 			propagatedDtos.putAll(newPropagatedDtos);
 		}
 	}
+
+	protected abstract void doBeforeVisit(final Set<Path> dirs);
 
 	protected abstract void doInit() throws ConfigurationException, InitializationException, InvalidStateTransitionException;
 

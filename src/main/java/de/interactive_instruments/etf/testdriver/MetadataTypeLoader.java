@@ -16,9 +16,11 @@
 package de.interactive_instruments.etf.testdriver;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import de.interactive_instruments.etf.EtfConstants;
 import de.interactive_instruments.etf.dal.dao.DataStorage;
@@ -64,17 +66,21 @@ public final class MetadataTypeLoader extends AbstractTypeLoader {
 
 	@Override
 	protected void doBeforeDeregister(final Dto dto) {
-
+		// nothing to do here
 	}
 
 	@Override
 	protected void doAfterRegister(final Collection<Dto> dtos) {
-
+		// nothing to do here
 	}
 
 	@Override
 	protected void doRelease() {
+		// nothing to do here
+	}
 
+	@Override protected void doBeforeVisit(final Set<Path> dirs) {
+		// nothing to do here
 	}
 
 	@Override

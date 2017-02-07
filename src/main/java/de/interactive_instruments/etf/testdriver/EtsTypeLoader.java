@@ -15,9 +15,11 @@
  */
 package de.interactive_instruments.etf.testdriver;
 
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import de.interactive_instruments.Configurable;
 import de.interactive_instruments.Releasable;
@@ -27,6 +29,7 @@ import de.interactive_instruments.etf.dal.dto.test.ExecutableTestSuiteDto;
 import de.interactive_instruments.etf.model.DefaultEidMap;
 import de.interactive_instruments.etf.model.EID;
 import de.interactive_instruments.etf.model.EidMap;
+import de.interactive_instruments.exceptions.ExcUtils;
 import de.interactive_instruments.exceptions.InitializationException;
 import de.interactive_instruments.exceptions.InvalidStateTransitionException;
 import de.interactive_instruments.exceptions.config.ConfigurationException;
@@ -69,5 +72,14 @@ public abstract class EtsTypeLoader extends AbstractTypeLoader {
 
 	public ExecutableTestSuiteDto getExecutableTestSuiteById(final EID id) {
 		return etsCache.get(id);
+	}
+
+	@Override protected void doBeforeVisit(final Set<Path> dirs) {
+		try {
+			// Make sure that other types are created first
+			Thread.sleep(3000);
+		} catch (InterruptedException ign) {
+			ExcUtils.suppress(ign);
+		}
 	}
 }
