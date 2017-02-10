@@ -64,6 +64,10 @@ public final class MetadataTypeLoader extends AbstractTypeLoader {
 		}
 	}
 
+	@Override public int fileChangeNotificationPriority() {
+		return 200;
+	}
+
 	@Override
 	protected void doBeforeDeregister(final Dto dto) {
 		// nothing to do here

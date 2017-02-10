@@ -43,6 +43,11 @@ public final class TypeBuildingFileVisitor implements FileVisitor<Path> {
 
 	private static Logger logger = LoggerFactory.getLogger(TypeBuildingFileVisitor.class);
 
+	/**
+	 * Prepare Type Builder with file
+	 *
+	 * @param <T>
+	 */
 	@FunctionalInterface
 	public interface TypeBuilder<T extends Dto> {
 
@@ -55,6 +60,11 @@ public final class TypeBuildingFileVisitor implements FileVisitor<Path> {
 		TypeBuilderCmd<T> prepare(final Path file);
 	}
 
+	/**
+	 * File based type builder
+	 *
+	 * @param <T>
+	 */
 	public abstract static class TypeBuilderCmd<T extends Dto> implements NestedDependencyHolder<TypeBuilderCmd<T>> {
 		protected final Path path;
 		protected String id;
@@ -84,12 +94,14 @@ public final class TypeBuildingFileVisitor implements FileVisitor<Path> {
 			dependencies.keySet().removeAll(skipIds);
 		}
 
-		final void setKnownBuilders(final Map<String, TypeBuilderCmd> builders) {
-			dependencies.entrySet().forEach(e -> {
+		final void setKnownBuilders(final Map<String, TypeBuilderCmd> builders) throws DependencyResolutionException {
+			for (final Map.Entry<String, TypeBuilderCmd<T>> e : dependencies.entrySet()) {
 				final TypeBuilderCmd<T> builder = builders.get(e.getKey());
-				e.setValue(Objects.requireNonNull(builder,
-						"Referenced Object with ID " + e.getKey() + ", defined in " + path + " not found!"));
-			});
+				if(builder==null){
+					throw new DependencyResolutionException("Referenced Object with ID " + e.getKey() + ", defined in " + path + " not found!");
+				}
+				e.setValue(builder);
+			}
 		}
 	}
 
@@ -171,10 +183,20 @@ public final class TypeBuildingFileVisitor implements FileVisitor<Path> {
 
 		// Set all known builders
 		final Map<String, TypeBuilderCmd> builders = Collections.unmodifiableMap(typeBuilderCmds);
-		typeBuilderCmdColl.forEach(b -> b.setKnownBuilders(builders));
+		final Collection<TypeBuilderCmd<? extends Dto>> typeBuilderCleanCmdColl = new ArrayList<>();
+		for (final TypeBuilderCmd<? extends Dto> typeBuilderCmd : typeBuilderCmdColl) {
+			try {
+				typeBuilderCmd.setKnownBuilders(builders);
+			} catch (final DependencyResolutionException e) {
+				logger.error(LogUtils.FATAL_MESSAGE, "Failed to resolve dependency ", e);
+				// We cannot proceed here
+				return null;
+			}
+			typeBuilderCleanCmdColl.add(typeBuilderCmd);
+		}
 
 		// Create a dependency graph and build the types in the right order
-		final DependencyGraph dependencyGraph = new DependencyGraph(typeBuilderCmdColl);
+		final DependencyGraph dependencyGraph = new DependencyGraph(typeBuilderCleanCmdColl);
 		final List<TypeBuilderCmd<? extends Dto>> orderedTypeBuilderCmds = dependencyGraph.sortIgnoreCylce();
 		final Map<Path, Dto> buildTypes = new TreeMap<>();
 		for (int i = orderedTypeBuilderCmds.size() - 1; i >= 0; i--) {

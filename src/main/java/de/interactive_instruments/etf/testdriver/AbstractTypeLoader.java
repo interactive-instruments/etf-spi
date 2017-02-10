@@ -27,10 +27,12 @@ import de.interactive_instruments.exceptions.ObjectWithIdNotFoundException;
 import de.interactive_instruments.exceptions.StorageException;
 import de.interactive_instruments.exceptions.config.ConfigurationException;
 import de.interactive_instruments.io.FileChangeListener;
-import de.interactive_instruments.io.RecursiveDirWatcher;
+import de.interactive_instruments.io.DirWatcher;
+import de.interactive_instruments.io.MultiFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,7 +51,6 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 	private boolean initialized = false;
 	protected IFile watchDir;
-	private RecursiveDirWatcher watcher;
 	private final List<TypeBuildingFileVisitor.TypeBuilder<? extends Dto>> builders;
 
 	// Path -> Dto
@@ -134,15 +135,13 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 		filesChanged(null, Collections.singleton(watchDir.toPath()));
 
 		// Start watching the directory
-		watcher = RecursiveDirWatcher.create(this.watchDir.toPath(), this, path -> !path.getFileName().startsWith("."));
-		try {
-			watcher.start();
-		} catch (IOException e) {
-			logger.error("Failed to start watch service: " + e.getMessage());
-			throw new InitializationException(e);
-		}
+		DirWatcher.register(this.watchDir.toPath(), this);
 
 		this.initialized = true;
+	}
+
+	@Override public MultiFileFilter fileChangePreFilter() {
+		return (File pathname) -> !pathname.getName().startsWith(".");
 	}
 
 	@Override
@@ -155,7 +154,15 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 	@Override
 	public void release() {
 		doRelease();
+		DirWatcher.unregister(this);
 		this.propagatedDtos.clear();
-		this.watcher.release();
+	}
+
+	@Override public String toString() {
+		final StringBuffer sb = new StringBuffer(getClass().getSimpleName());
+		sb.append(" (");
+		sb.append(this.propagatedDtos.size());
+		sb.append(')');
+		return sb.toString();
 	}
 }
