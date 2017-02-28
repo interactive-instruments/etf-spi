@@ -1,5 +1,5 @@
 /**
- * Copyright 2010-2016 interactive instruments GmbH
+ * Copyright 2010-2017 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,7 +96,8 @@ final class ComponentClassLoader extends ClassLoader implements Closeable {
 		private IFile jarExtractionDir;
 		private final Set<String> disallowedJarNames;
 
-		ChildURLClassLoader(final URL[] urls, final ParentDelegationClassClassLoader realParent, final Set<String> disallowedJarNames, final Logger logger) {
+		ChildURLClassLoader(final URL[] urls, final ParentDelegationClassClassLoader realParent,
+				final Set<String> disallowedJarNames, final Logger logger) {
 			super(urls, null);
 			this.logger = logger;
 			this.realParent = realParent;

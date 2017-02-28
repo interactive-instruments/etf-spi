@@ -1,5 +1,5 @@
 /**
- * Copyright 2010-2016 interactive instruments GmbH
+ * Copyright 2010-2017 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,8 @@ final class DefaultTestRun implements TestRun {
 			if (testRunDto.getTestTasks() != null) {
 				for (int i = 0; i < testRunDto.getTestTasks().size(); i++) {
 					long max = 0;
-					if (testTasks != null && currentRunIndex < testTasks.size() && testTasks.get(currentRunIndex).getProgress() != null) {
+					if (testTasks != null && currentRunIndex < testTasks.size()
+							&& testTasks.get(currentRunIndex).getProgress() != null) {
 						max = testTasks.get(currentRunIndex).getProgress().getMaxSteps();
 					}
 					if (max <= 0) {
@@ -169,7 +170,8 @@ final class DefaultTestRun implements TestRun {
 			fireTestTaskRunning(testTasks.get(currentRunIndex));
 			testTasks.get(currentRunIndex).run();
 			fireTestTaskCompleted(testTasks.get(currentRunIndex));
-			overallStepsCompleted += testRunDto.getTestTasks().get(currentRunIndex).getExecutableTestSuite().getAssertionsSize();
+			overallStepsCompleted += testRunDto.getTestTasks().get(currentRunIndex).getExecutableTestSuite()
+					.getAssertionsSize();
 			testTasks.get(currentRunIndex).release();
 		}
 		fireCompleted();
@@ -254,12 +256,14 @@ final class DefaultTestRun implements TestRun {
 
 	@Override
 	public final void cancel() throws InvalidStateTransitionException {
-		testRunLogger.info("Canceling TestRun." + getId());
-		fireCanceling();
-		doCancel();
-		fireCanceled();
-		release();
-		testRunLogger.info("TestRun." + getId() + " canceled");
+		if (this.getState() == STATE.CANCELING || this.getState() == STATE.CANCELED) {
+			testRunLogger.info("Canceling TestRun." + getId());
+			fireCanceling();
+			doCancel();
+			fireCanceled();
+			release();
+			testRunLogger.info("TestRun." + getId() + " canceled");
+		}
 	}
 
 	protected final void handleException(final Throwable e) {

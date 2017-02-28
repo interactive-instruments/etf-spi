@@ -1,5 +1,5 @@
 /**
- * Copyright 2010-2016 interactive instruments GmbH
+ * Copyright 2010-2017 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,18 @@
  */
 package de.interactive_instruments.etf.testdriver;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.WatchEvent;
+import java.util.*;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.interactive_instruments.Configurable;
 import de.interactive_instruments.IFile;
 import de.interactive_instruments.Releasable;
@@ -26,20 +38,9 @@ import de.interactive_instruments.exceptions.InvalidStateTransitionException;
 import de.interactive_instruments.exceptions.ObjectWithIdNotFoundException;
 import de.interactive_instruments.exceptions.StorageException;
 import de.interactive_instruments.exceptions.config.ConfigurationException;
-import de.interactive_instruments.io.FileChangeListener;
 import de.interactive_instruments.io.DirWatcher;
+import de.interactive_instruments.io.FileChangeListener;
 import de.interactive_instruments.io.MultiFileFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.WatchEvent;
-import java.util.*;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.stream.Collectors;
 
 /**
  * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
@@ -91,11 +92,12 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 
 	@Override
 	public final synchronized void filesChanged(final Map<Path, WatchEvent.Kind> eventMap, final Set<Path> dirs) {
-		final Set<Path> parentLessDirs = dirs.stream().filter(dir -> !dirs.contains(dir.getParent())).collect(Collectors.toSet());
+		final Set<Path> parentLessDirs = dirs.stream().filter(dir -> !dirs.contains(dir.getParent()))
+				.collect(Collectors.toSet());
 
 		// Check which files were removed
-		final List<Dto> dtosToRemove = propagatedDtos.entrySet().stream().filter(entry ->
-				!Files.exists(entry.getKey())).map(Map.Entry::getValue).collect(Collectors.toList());
+		final List<Dto> dtosToRemove = propagatedDtos.entrySet().stream().filter(entry -> !Files.exists(entry.getKey()))
+				.map(Map.Entry::getValue).collect(Collectors.toList());
 		if (!dtosToRemove.isEmpty()) {
 			deregisterTypes(dtosToRemove);
 		}
@@ -140,7 +142,8 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 		this.initialized = true;
 	}
 
-	@Override public MultiFileFilter fileChangePreFilter() {
+	@Override
+	public MultiFileFilter fileChangePreFilter() {
 		return (File pathname) -> !pathname.getName().startsWith(".");
 	}
 
@@ -158,7 +161,8 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 		this.propagatedDtos.clear();
 	}
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		final StringBuffer sb = new StringBuffer(getClass().getSimpleName());
 		sb.append(" (");
 		sb.append(this.propagatedDtos.size());

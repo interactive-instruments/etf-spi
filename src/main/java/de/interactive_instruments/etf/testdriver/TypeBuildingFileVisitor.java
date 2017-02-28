@@ -1,5 +1,5 @@
 /**
- * Copyright 2010-2016 interactive instruments GmbH
+ * Copyright 2010-2017 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,8 +97,9 @@ public final class TypeBuildingFileVisitor implements FileVisitor<Path> {
 		final void setKnownBuilders(final Map<String, TypeBuilderCmd> builders) throws DependencyResolutionException {
 			for (final Map.Entry<String, TypeBuilderCmd<T>> e : dependencies.entrySet()) {
 				final TypeBuilderCmd<T> builder = builders.get(e.getKey());
-				if(builder==null){
-					throw new DependencyResolutionException("Referenced Object with ID " + e.getKey() + ", defined in " + path + " not found!");
+				if (builder == null) {
+					throw new DependencyResolutionException(
+							"Referenced Object with ID " + e.getKey() + ", defined in " + path + " not found!");
 				}
 				e.setValue(builder);
 			}

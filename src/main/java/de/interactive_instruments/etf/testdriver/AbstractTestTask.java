@@ -1,8 +1,8 @@
 /**
- * Copyright 2010-2016 interactive instruments GmbH
+ * Copyright 2010-2017 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this path except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.slf4j.LoggerFactory;
+
+import de.interactive_instruments.LogUtils;
 import de.interactive_instruments.etf.dal.dto.result.TestTaskResultDto;
 import de.interactive_instruments.etf.dal.dto.run.TestTaskDto;
 import de.interactive_instruments.etf.model.EID;
@@ -42,7 +45,8 @@ public abstract class AbstractTestTask implements TestTask {
 	// TODO make private when interface is implemented in BaseX
 	protected TestResultCollector resultCollector;
 
-	protected AbstractTestTask(final TestTaskDto testTaskDto, final AbstractTestTaskProgress progress, final ClassLoader classLoader) {
+	protected AbstractTestTask(final TestTaskDto testTaskDto, final AbstractTestTaskProgress progress,
+			final ClassLoader classLoader) {
 		this.testTaskDto = testTaskDto;
 		this.progress = progress;
 		this.classLoader = classLoader;
@@ -118,12 +122,14 @@ public abstract class AbstractTestTask implements TestTask {
 
 	@Override
 	public final void cancel() throws InvalidStateTransitionException {
-		getLogger().info("Canceling TestRunTask." + getId());
-		fireCanceling();
-		doCancel();
-		fireCanceled();
-		release();
-		getLogger().info("TestRunTask." + getId() + " canceled");
+		if (this.getState() == STATE.CANCELING || this.getState() == STATE.CANCELED) {
+			getLogger().info("Canceling TestRunTask." + getId());
+			fireCanceling();
+			doCancel();
+			fireCanceled();
+			release();
+			getLogger().info("TestRunTask." + getId() + " canceled");
+		}
 	}
 
 	@Override
@@ -138,7 +144,7 @@ public abstract class AbstractTestTask implements TestTask {
 
 	@Override
 	public STATE getState() {
-		return this.progress.getCurrentState();
+		return this.progress != null ? this.progress.getCurrentState() : STATE.INITIALIZING;
 	}
 
 	@Override
@@ -178,9 +184,12 @@ public abstract class AbstractTestTask implements TestTask {
 		if (!reqCondition || progress.getCurrentState() == state) {
 			final String errorMsg = "Illegal state transition in task " + this.testTaskDto.getId() +
 					" from " + progress.getCurrentState() + " to " + state;
+			/*
 			if (resultCollector != null) {
 				getLogger().error(errorMsg);
 			}
+			*/
+			LoggerFactory.getLogger(this.getClass()).error(LogUtils.FATAL_MESSAGE, errorMsg);
 			throw new InvalidStateTransitionException(errorMsg);
 		}
 		if (progress.getOldState() != null) {
@@ -193,7 +202,8 @@ public abstract class AbstractTestTask implements TestTask {
 		synchronized (this) {
 			progress.setState(state);
 			if (this.eventListeners != null) {
-				this.eventListeners.forEach(l -> l.taskStateChangedEvent(this, progress.getCurrentState(), progress.getOldState()));
+				this.eventListeners
+						.forEach(l -> l.taskStateChangedEvent(this, progress.getCurrentState(), progress.getOldState()));
 			}
 		}
 	}
@@ -237,6 +247,7 @@ public abstract class AbstractTestTask implements TestTask {
 		changeState(TaskState.STATE.FINALIZING,
 				(progress.getCurrentState() == TaskState.STATE.COMPLETED ||
 						progress.getCurrentState() == TaskState.STATE.CANCELED ||
+						progress.getCurrentState() == TaskState.STATE.FINALIZING ||
 						progress.getCurrentState() == TaskState.STATE.FAILED));
 	}
 

@@ -1,5 +1,5 @@
 /**
- * Copyright 2010-2016 interactive instruments GmbH
+ * Copyright 2010-2017 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,8 @@ public final class MetadataTypeLoader extends AbstractTypeLoader {
 		}
 	}
 
-	@Override public int fileChangeNotificationPriority() {
+	@Override
+	public int fileChangeNotificationPriority() {
 		return 200;
 	}
 
@@ -83,7 +84,8 @@ public final class MetadataTypeLoader extends AbstractTypeLoader {
 		// nothing to do here
 	}
 
-	@Override protected void doBeforeVisit(final Set<Path> dirs) {
+	@Override
+	protected void doBeforeVisit(final Set<Path> dirs) {
 		// nothing to do here
 	}
 

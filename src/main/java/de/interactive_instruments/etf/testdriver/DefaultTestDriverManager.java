@@ -1,5 +1,5 @@
 /**
- * Copyright 2010-2016 interactive instruments GmbH
+ * Copyright 2010-2017 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,8 @@ import de.interactive_instruments.properties.ConfigPropertyHolder;
  */
 public class DefaultTestDriverManager implements TestDriverManager {
 
-	final private ConfigProperties configProperties = new ConfigProperties(ETF_DATA_STORAGE_NAME, ETF_TESTDRIVERS_DIR, ETF_ATTACHMENT_DIR);
+	final private ConfigProperties configProperties = new ConfigProperties(ETF_DATA_STORAGE_NAME, ETF_TESTDRIVERS_DIR,
+			ETF_ATTACHMENT_DIR);
 	protected TestDriverLoader loader;
 	private boolean initialized = false;
 	private final Logger logger = LoggerFactory.getLogger(DefaultTestDriverManager.class);
@@ -69,7 +70,8 @@ public class DefaultTestDriverManager implements TestDriverManager {
 	}
 
 	@Override
-	public void load(final EID testDriverId) throws ObjectWithIdNotFoundException, ComponentLoadingException, ConfigurationException {
+	public void load(final EID testDriverId)
+			throws ObjectWithIdNotFoundException, ComponentLoadingException, ConfigurationException {
 		loader.load(testDriverId.getId());
 	}
 
@@ -128,11 +130,13 @@ public class DefaultTestDriverManager implements TestDriverManager {
 	}
 
 	@Override
-	public TestRun createTestRun(final TestRunDto testRunDto, final TestResultCollectorFactory collectorFactory) throws TestRunInitializationException {
+	public TestRun createTestRun(final TestRunDto testRunDto, final TestResultCollectorFactory collectorFactory)
+			throws TestRunInitializationException {
 		try {
 			testRunDto.ensureBasicValidity();
 
-			final IFile testRunAttachmentDir = configProperties.getPropertyAsFile(ETF_ATTACHMENT_DIR).secureExpandPathDown(testRunDto.getId().toString());
+			final IFile testRunAttachmentDir = configProperties.getPropertyAsFile(ETF_ATTACHMENT_DIR)
+					.secureExpandPathDown(testRunDto.getId().toString());
 			if (testRunAttachmentDir.exists()) {
 				logger.error("The attachment directory already exists: " + testRunAttachmentDir.getAbsolutePath());
 				throw new IllegalStateException("The attachment directory already exists");
@@ -166,7 +170,8 @@ public class DefaultTestDriverManager implements TestDriverManager {
 				}
 
 				// Create dependency graph
-				final DependencyGraph<ExecutableTestSuiteDto> dependencyGraph = new DependencyGraph<>(etsLookupSet.getResolved());
+				final DependencyGraph<ExecutableTestSuiteDto> dependencyGraph = new DependencyGraph<>(
+						etsLookupSet.getResolved());
 				// does not include the base ETS
 				final List<ExecutableTestSuiteDto> sortedEts = dependencyGraph.sortIgnoreCylce();
 
@@ -191,12 +196,15 @@ public class DefaultTestDriverManager implements TestDriverManager {
 			int counter = 0;
 			for (final TestTaskDto testTaskDto : testRunDto.getTestTasks()) {
 				testRunLogger.info(" TestTask {} ({})", ++counter, testTaskDto.getId());
-				testRunLogger.info(" will perform tests on Test Object '{}' by using Executable Test Suite {}", testTaskDto.getTestObject().getLabel(), testTaskDto.getExecutableTestSuite().getDescriptiveLabel());
+				testRunLogger.info(" will perform tests on Test Object '{}' by using Executable Test Suite {}",
+						testTaskDto.getTestObject().getLabel(), testTaskDto.getExecutableTestSuite().getDescriptiveLabel());
 				if (testTaskDto.getArguments() != null) {
 					testRunLogger.info(" with parameters: ");
-					testTaskDto.getArguments().values().entrySet().forEach(p -> testRunLogger.info("{} = {}", p.getKey(), p.getValue()));
+					testTaskDto.getArguments().values().entrySet()
+							.forEach(p -> testRunLogger.info("{} = {}", p.getKey(), p.getValue()));
 				}
-				final TestDriver tD = loader.getTestDriverById(testTaskDto.getExecutableTestSuite().getTestDriver().getId().toString());
+				final TestDriver tD = loader
+						.getTestDriverById(testTaskDto.getExecutableTestSuite().getTestDriver().getId().toString());
 				final TestTask testTask = tD.createTestTask(testTaskDto);
 
 				testTask.setResultListener(collectorFactory.createTestResultCollector(testRunLogger, testTaskDto));
@@ -205,7 +213,8 @@ public class DefaultTestDriverManager implements TestDriverManager {
 			((DefaultTestRun) testRun).setTestTasks(testTasks);
 			testRunLogger.info("Test Tasks prepared and ready to be executed. Waiting for the scheduler to start.");
 			return testRun;
-		} catch (TestTaskInitializationException | IncompleteDtoException | ComponentNotLoadedException | ConfigurationException | ObjectWithIdNotFoundException e) {
+		} catch (TestTaskInitializationException | IncompleteDtoException | ComponentNotLoadedException | ConfigurationException
+				| ObjectWithIdNotFoundException e) {
 			throw new TestRunInitializationException(e);
 		}
 	}

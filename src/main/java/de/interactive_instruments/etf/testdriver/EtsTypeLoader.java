@@ -1,5 +1,5 @@
 /**
- * Copyright 2010-2016 interactive instruments GmbH
+ * Copyright 2010-2017 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,8 @@ public abstract class EtsTypeLoader extends AbstractTypeLoader {
 
 	private final EidMap<ExecutableTestSuiteDto> etsCache = new DefaultEidMap<>(new HashMap<>(32));
 
-	protected EtsTypeLoader(final DataStorage dataStorageCallback, final List<TypeBuildingFileVisitor.TypeBuilder<? extends Dto>> builders) {
+	protected EtsTypeLoader(final DataStorage dataStorageCallback,
+			final List<TypeBuildingFileVisitor.TypeBuilder<? extends Dto>> builders) {
 		super(dataStorageCallback, builders);
 	}
 
@@ -74,7 +75,8 @@ public abstract class EtsTypeLoader extends AbstractTypeLoader {
 		return etsCache.get(id);
 	}
 
-	@Override protected void doBeforeVisit(final Set<Path> dirs) {
+	@Override
+	protected void doBeforeVisit(final Set<Path> dirs) {
 		try {
 			// Make sure that other types are created first
 			Thread.sleep(3000);

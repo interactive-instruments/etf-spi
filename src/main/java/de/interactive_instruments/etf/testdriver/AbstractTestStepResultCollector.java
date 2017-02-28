@@ -1,5 +1,5 @@
 /**
- * Copyright 2010-2016 interactive instruments GmbH
+ * Copyright 2010-2017 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,8 @@ public abstract class AbstractTestStepResultCollector extends AbstractTestCollec
 	}
 
 	@Override
-	final public String startTestCase(final String testModelItemId, final long startTimestamp) throws IllegalArgumentException, IllegalStateException {
+	final public String startTestCase(final String testModelItemId, final long startTimestamp)
+			throws IllegalArgumentException, IllegalStateException {
 		try {
 			switch (currentState) {
 			case WRITING_TEST_STEP_RESULT:
@@ -73,14 +74,16 @@ public abstract class AbstractTestStepResultCollector extends AbstractTestCollec
 			case WRITING_CALLED_TEST_STEP_RESULT:
 				return subCollector.startTestCase(testModelItemId, startTimestamp);
 			}
-			throw new IllegalStateException("Illegal state transition: cannot start writing Test Case result when in " + currentState + " state");
+			throw new IllegalStateException(
+					"Illegal state transition: cannot start writing Test Case result when in " + currentState + " state");
 		} catch (Exception e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
 
 	@Override
-	final public String startTestStep(final String testModelItemId, final long startTimestamp) throws IllegalArgumentException, IllegalStateException {
+	final public String startTestStep(final String testModelItemId, final long startTimestamp)
+			throws IllegalArgumentException, IllegalStateException {
 		try {
 			switch (currentState) {
 			case TEST_STEP_RESULT_FINISHED:
@@ -97,14 +100,16 @@ public abstract class AbstractTestStepResultCollector extends AbstractTestCollec
 			case WRITING_CALLED_TEST_STEP_RESULT:
 				return subCollector.startTestStep(testModelItemId, startTimestamp);
 			}
-			throw new IllegalStateException("Illegal state transition: cannot start writing Test Step result when in " + currentState + " state");
+			throw new IllegalStateException(
+					"Illegal state transition: cannot start writing Test Step result when in " + currentState + " state");
 		} catch (Exception e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
 
 	@Override
-	final public String startTestAssertion(final String testModelItemId, final long startTimestamp) throws IllegalArgumentException, IllegalStateException {
+	final public String startTestAssertion(final String testModelItemId, final long startTimestamp)
+			throws IllegalArgumentException, IllegalStateException {
 		try {
 			switch (currentState) {
 			case CALLED_TEST_CASE_RESULT_FINISHED:
@@ -119,14 +124,16 @@ public abstract class AbstractTestStepResultCollector extends AbstractTestCollec
 			case WRITING_CALLED_TEST_STEP_RESULT:
 				return subCollector.startTestAssertion(testModelItemId, startTimestamp);
 			}
-			throw new IllegalStateException("Illegal state transition: cannot start writing Test Assertion result when in " + currentState + " state");
+			throw new IllegalStateException(
+					"Illegal state transition: cannot start writing Test Assertion result when in " + currentState + " state");
 		} catch (Exception e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
 
 	@Override
-	final public String end(final String testModelItemId, final int status, final long stopTimestamp) throws IllegalArgumentException, IllegalStateException {
+	final public String end(final String testModelItemId, final int status, final long stopTimestamp)
+			throws IllegalArgumentException, IllegalStateException {
 		try {
 			switch (currentState) {
 			case CALLED_TEST_CASE_RESULT_FINISHED:
@@ -152,7 +159,8 @@ public abstract class AbstractTestStepResultCollector extends AbstractTestCollec
 			case WRITING_CALLED_TEST_STEP_RESULT:
 				return subCollector.end(testModelItemId, status, stopTimestamp);
 			}
-			throw new IllegalStateException("Illegal state transition: cannot end result structure when in " + currentState + " state");
+			throw new IllegalStateException(
+					"Illegal state transition: cannot end result structure when in " + currentState + " state");
 		} catch (final Exception e) {
 			logger.error("An internal error occurred finishing result {} ", testModelItemId, e);
 			notifyError();
@@ -169,7 +177,8 @@ public abstract class AbstractTestStepResultCollector extends AbstractTestCollec
 		} else if (currentState == WRITING_CALLED_TEST_STEP_RESULT) {
 			setState(CALLED_TEST_STEP_RESULT_FINISHED);
 		} else {
-			throw new IllegalStateException("Illegal state transition: cannot release sub collector when in " + currentState + " state");
+			throw new IllegalStateException(
+					"Illegal state transition: cannot release sub collector when in " + currentState + " state");
 		}
 	}
 

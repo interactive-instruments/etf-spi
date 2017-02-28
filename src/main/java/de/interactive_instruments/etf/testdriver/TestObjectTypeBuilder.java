@@ -1,5 +1,5 @@
 /**
- * Copyright 2010-2016 interactive instruments GmbH
+ * Copyright 2010-2017 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,8 @@ public final class TestObjectTypeBuilder implements TypeBuildingFileVisitor.Type
 		private final StreamWriteDao<TestObjectTypeDto> writeDao;
 		private final static Logger logger = LoggerFactory.getLogger(TestObjectTypeBuilderCmd.class);
 
-		TestObjectTypeBuilderCmd(final Path path, final StreamWriteDao<TestObjectTypeDto> writeDao) throws IOException, XPathExpressionException {
+		TestObjectTypeBuilderCmd(final Path path, final StreamWriteDao<TestObjectTypeDto> writeDao)
+				throws IOException, XPathExpressionException {
 			super(path);
 			this.writeDao = writeDao;
 			this.id = XmlUtils.eval("/etf:TestObjectType[1]/@id", path.toFile());

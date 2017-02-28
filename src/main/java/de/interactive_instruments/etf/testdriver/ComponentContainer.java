@@ -1,5 +1,5 @@
 /**
- * Copyright 2010-2016 interactive instruments GmbH
+ * Copyright 2010-2017 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,7 +118,8 @@ final class ComponentContainer implements Releasable {
 			testDriver = (TestDriver) testDriverInitializerClass.newInstance();
 			this.testDriver.getConfigurationProperties().setPropertiesFrom(properties, true);
 			this.testDriver.init();
-		} catch (InvalidStateTransitionException | InitializationException | IllegalAccessException | InstantiationException e) {
+		} catch (InvalidStateTransitionException | InitializationException | IllegalAccessException
+				| InstantiationException e) {
 			throw new ComponentLoadingException(this.componentJar.toPath(), e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(oldCl);

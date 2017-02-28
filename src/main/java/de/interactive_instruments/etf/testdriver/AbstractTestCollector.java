@@ -1,5 +1,5 @@
 /**
- * Copyright 2010-2016 interactive instruments GmbH
+ * Copyright 2010-2017 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,30 +27,39 @@ public abstract class AbstractTestCollector implements BasicTestResultCollector 
 	protected final static Logger logger = LoggerFactory.getLogger(TestResultCollector.class);
 
 	@Override
-	public String startTestTask(final String resultedFrom, final long startTimestamp) throws IllegalArgumentException, IllegalStateException {
-		throw new UnsupportedOperationException("Operation not supported by collector, illegal delegation from parent collector");
+	public String startTestTask(final String resultedFrom, final long startTimestamp)
+			throws IllegalArgumentException, IllegalStateException {
+		throw new UnsupportedOperationException(
+				"Operation not supported by collector, illegal delegation from parent collector");
 	}
 
 	@Override
-	public String startTestModule(final String resultedFrom, final long startTimestamp) throws IllegalArgumentException, IllegalStateException {
-		throw new UnsupportedOperationException("Operation not supported by collector, illegal delegation from parent collector");
+	public String startTestModule(final String resultedFrom, final long startTimestamp)
+			throws IllegalArgumentException, IllegalStateException {
+		throw new UnsupportedOperationException(
+				"Operation not supported by collector, illegal delegation from parent collector");
 	}
 
 	protected String startTestCaseResult(final String resultedFrom, final long startTimestamp) throws Exception {
-		throw new UnsupportedOperationException("Operation not supported by collector, illegal delegation from parent collector");
+		throw new UnsupportedOperationException(
+				"Operation not supported by collector, illegal delegation from parent collector");
 	}
 
-	protected String endTestCaseResult(final String testModelItemId, final int status, final long stopTimestamp) throws Exception {
-		throw new UnsupportedOperationException("Operation not supported by collector, illegal delegation from parent collector");
+	protected String endTestCaseResult(final String testModelItemId, final int status, final long stopTimestamp)
+			throws Exception {
+		throw new UnsupportedOperationException(
+				"Operation not supported by collector, illegal delegation from parent collector");
 	}
 
 	abstract protected String startTestStepResult(final String resultedFrom, final long startTimestamp) throws Exception;
 
-	abstract protected String endTestStepResult(final String testModelItemId, final int status, final long stopTimestamp) throws Exception;
+	abstract protected String endTestStepResult(final String testModelItemId, final int status, final long stopTimestamp)
+			throws Exception;
 
 	abstract protected String startTestAssertionResult(final String resultedFrom, final long startTimestamp) throws Exception;
 
-	abstract protected String endTestAssertionResult(final String testModelItemId, final int status, final long stopTimestamp) throws Exception;
+	abstract protected String endTestAssertionResult(final String testModelItemId, final int status, final long stopTimestamp)
+			throws Exception;
 
 	abstract protected void startInvokedTests();
 

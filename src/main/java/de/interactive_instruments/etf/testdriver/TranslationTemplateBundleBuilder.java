@@ -1,5 +1,5 @@
 /**
- * Copyright 2010-2016 interactive instruments GmbH
+ * Copyright 2010-2017 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,8 @@ import de.interactive_instruments.exceptions.StorageException;
 /**
  * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
  */
-public final class TranslationTemplateBundleBuilder implements TypeBuildingFileVisitor.TypeBuilder<TranslationTemplateBundleDto> {
+public final class TranslationTemplateBundleBuilder
+		implements TypeBuildingFileVisitor.TypeBuilder<TranslationTemplateBundleDto> {
 
 	private final StreamWriteDao<TranslationTemplateBundleDto> writeDao;
 	private final static Logger logger = LoggerFactory.getLogger(TranslationTemplateBundleBuilder.class);
@@ -45,12 +46,14 @@ public final class TranslationTemplateBundleBuilder implements TypeBuildingFileV
 		this.writeDao = (StreamWriteDao<TranslationTemplateBundleDto>) writeDao;
 	}
 
-	private static class TranslationTemplateBuilderCmd extends TypeBuildingFileVisitor.TypeBuilderCmd<TranslationTemplateBundleDto> {
+	private static class TranslationTemplateBuilderCmd
+			extends TypeBuildingFileVisitor.TypeBuilderCmd<TranslationTemplateBundleDto> {
 
 		private final StreamWriteDao<TranslationTemplateBundleDto> writeDao;
 		private final static Logger logger = LoggerFactory.getLogger(TranslationTemplateBuilderCmd.class);
 
-		TranslationTemplateBuilderCmd(final Path path, final StreamWriteDao<TranslationTemplateBundleDto> writeDao) throws IOException, XPathExpressionException {
+		TranslationTemplateBuilderCmd(final Path path, final StreamWriteDao<TranslationTemplateBundleDto> writeDao)
+				throws IOException, XPathExpressionException {
 			super(path);
 			this.writeDao = writeDao;
 			this.id = XmlUtils.eval("/etf:TranslationTemplateBundle[1]/@id", path.toFile());

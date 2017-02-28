@@ -1,5 +1,5 @@
 /**
- * Copyright 2010-2016 interactive instruments GmbH
+ * Copyright 2010-2017 interactive instruments GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,8 @@ public class XmlUtils {
 
 	public static String eval(final String expr, final File file) throws IOException, XPathExpressionException {
 		final XPath xpath = de.interactive_instruments.etf.XmlUtils.newXPath();
-		final de.interactive_instruments.XmlUtils.XmlHandle xmlHandle = de.interactive_instruments.XmlUtils.newXmlHandle(xpath, file);
+		final de.interactive_instruments.XmlUtils.XmlHandle xmlHandle = de.interactive_instruments.XmlUtils.newXmlHandle(xpath,
+				file);
 		final String oid = xmlHandle.evaluateValue(expr);
 		if (SUtils.isNullOrEmpty(oid)) {
 			throw new IOException("ID could not be evaluated in " + file);
