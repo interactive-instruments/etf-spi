@@ -50,6 +50,7 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 	protected final DataStorage dataStorageCallback;
 
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
+	private final ClassLoader contextClassloader;
 	private boolean initialized = false;
 	protected IFile watchDir;
 	private final List<TypeBuildingFileVisitor.TypeBuilder<? extends Dto>> builders;
@@ -64,6 +65,11 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 			final List<TypeBuildingFileVisitor.TypeBuilder<? extends Dto>> builders) {
 		this.dataStorageCallback = dataStorageCallback;
 		this.builders = builders;
+		this.contextClassloader = Thread.currentThread().getContextClassLoader();
+	}
+
+	protected void ensureContextClassLoader() {
+		Thread.currentThread().setContextClassLoader(contextClassloader);
 	}
 
 	protected abstract void doBeforeDeregister(final Dto dto);
@@ -98,6 +104,7 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 		// Check which files were removed
 		final List<Dto> dtosToRemove = propagatedDtos.entrySet().stream().filter(entry -> !Files.exists(entry.getKey()))
 				.map(Map.Entry::getValue).collect(Collectors.toList());
+		ensureContextClassLoader();
 		if (!dtosToRemove.isEmpty()) {
 			deregisterTypes(dtosToRemove);
 		}
