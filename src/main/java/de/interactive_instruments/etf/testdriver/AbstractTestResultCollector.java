@@ -15,6 +15,8 @@
  */
 package de.interactive_instruments.etf.testdriver;
 
+import java.util.Map;
+
 import static de.interactive_instruments.etf.testdriver.AbstractTestResultCollector.ResultCollectorState.*;
 
 /**

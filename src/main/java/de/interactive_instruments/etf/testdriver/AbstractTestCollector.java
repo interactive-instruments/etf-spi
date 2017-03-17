@@ -18,6 +18,8 @@ package de.interactive_instruments.etf.testdriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 /**
  * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
  */
@@ -68,6 +70,39 @@ public abstract class AbstractTestCollector implements BasicTestResultCollector 
 	abstract protected void startTestAssertionResults();
 
 	abstract protected void endTestAssertionResults();
+
+	abstract protected void doAddMessage(final String s);
+
+	abstract protected void doAddMessage(final String s, final Map<String, String> map);
+
+	abstract protected void doAddMessage(final String s, final String... strings);
+
+	@Override
+	public final void addMessage(final String s) {
+		if(subCollector!=null) {
+			subCollector.doAddMessage(s);
+		}else{
+			doAddMessage(s);
+		}
+	}
+
+	@Override
+	public final void addMessage(final String s, final Map<String, String> map) {
+		if(subCollector!=null) {
+			subCollector.doAddMessage(s,map);
+		}else{
+			doAddMessage(s,map);
+		}
+	}
+
+	@Override
+	public final void addMessage(final String s, final String... strings) {
+		if(subCollector!=null) {
+			subCollector.doAddMessage(s,strings);
+		}else{
+			doAddMessage(s,strings);
+		}
+	}
 
 	protected void notifyError() {
 		logger.error("Releasing collector due to an error");
