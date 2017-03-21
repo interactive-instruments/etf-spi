@@ -15,22 +15,19 @@
  */
 package de.interactive_instruments.etf.testdriver;
 
-import java.io.File;
-import java.io.FileFilter;
+import de.interactive_instruments.IFile;
+import de.interactive_instruments.LogUtils;
+import de.interactive_instruments.etf.dal.dto.Dto;
+import de.interactive_instruments.etf.model.NestedDependencyHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.interactive_instruments.IFile;
-import de.interactive_instruments.LogUtils;
-import de.interactive_instruments.etf.dal.dto.Dto;
-import de.interactive_instruments.etf.model.NestedDependencyHolder;
 
 /**
  * Walks through a directory and creates DTO types with the associated {@link TypeBuilder}s. Supports type dependency resolution.
