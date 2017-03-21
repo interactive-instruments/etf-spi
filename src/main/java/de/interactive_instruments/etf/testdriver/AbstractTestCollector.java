@@ -28,23 +28,54 @@ public abstract class AbstractTestCollector implements BasicTestResultCollector 
 	protected AbstractTestCollector subCollector = null;
 	protected final static Logger logger = LoggerFactory.getLogger(TestResultCollector.class);
 
-	@Override
-	public String startTestTask(final String resultedFrom, final long startTimestamp)
+	private int levels[] = new int[] { 6, 6, 6, 6, 6, 6, 6 };
+	private int level;
+
+
+	protected String doStartTestTask(final String resultedFrom, final long startTimestamp)
 			throws IllegalArgumentException, IllegalStateException {
 		throw new UnsupportedOperationException(
 				"Operation not supported by collector, illegal delegation from parent collector");
 	}
 
 	@Override
-	public String startTestModule(final String resultedFrom, final long startTimestamp)
+	public final String startTestTask(final String resultedFrom, final long startTimestamp)
+			throws IllegalArgumentException, IllegalStateException {
+		if(subCollector==null) {
+			level = 1;
+			levels[level] = 6;
+		}
+		return doStartTestTask(resultedFrom, startTimestamp);
+	}
+
+
+	protected String doStartTestModule(final String resultedFrom, final long startTimestamp)
 			throws IllegalArgumentException, IllegalStateException {
 		throw new UnsupportedOperationException(
 				"Operation not supported by collector, illegal delegation from parent collector");
 	}
 
-	protected String startTestCaseResult(final String resultedFrom, final long startTimestamp) throws Exception {
+	@Override
+	public final String startTestModule(final String resultedFrom, final long startTimestamp)
+			throws IllegalArgumentException, IllegalStateException {
+		if(subCollector==null) {
+			level = 2;
+			levels[level] = 6;
+		}
+		return doStartTestModule(resultedFrom, startTimestamp);
+	}
+
+	protected String doStartTestCaseResult(final String resultedFrom, final long startTimestamp) throws Exception {
 		throw new UnsupportedOperationException(
 				"Operation not supported by collector, illegal delegation from parent collector");
+	}
+
+	protected final String startTestCaseResult(final String resultedFrom, final long startTimestamp) throws Exception {
+		if(subCollector==null) {
+			level = 3;
+			levels[level] = 6;
+		}
+		return doStartTestCaseResult(resultedFrom, startTimestamp);
 	}
 
 	protected String endTestCaseResult(final String testModelItemId, final int status, final long stopTimestamp)
@@ -53,15 +84,59 @@ public abstract class AbstractTestCollector implements BasicTestResultCollector 
 				"Operation not supported by collector, illegal delegation from parent collector");
 	}
 
-	abstract protected String startTestStepResult(final String resultedFrom, final long startTimestamp) throws Exception;
+	abstract protected String doStartTestStepResult(final String resultedFrom, final long startTimestamp) throws Exception;
 
-	abstract protected String endTestStepResult(final String testModelItemId, final int status, final long stopTimestamp)
-			throws Exception;
+	protected final String startTestStepResult(final String resultedFrom, final long startTimestamp) throws Exception {
+		if(subCollector==null) {
+			level = 4;
+			levels[level] = 6;
+		}
+		return doStartTestStepResult(resultedFrom, startTimestamp);
+	}
 
-	abstract protected String startTestAssertionResult(final String resultedFrom, final long startTimestamp) throws Exception;
+	abstract protected String endTestStepResult(final String testModelItemId, final int status, final long stopTimestamp) throws Exception;
 
-	abstract protected String endTestAssertionResult(final String testModelItemId, final int status, final long stopTimestamp)
-			throws Exception;
+	abstract protected String doStartTestAssertionResult(final String resultedFrom, final long startTimestamp) throws Exception;
+
+	protected final String startTestAssertionResult(final String resultedFrom, final long startTimestamp) throws Exception {
+		if(subCollector==null) {
+			level = 5;
+			levels[level] = 6;
+		}
+		return doStartTestAssertionResult(resultedFrom, startTimestamp);
+	}
+
+	abstract protected String endTestAssertionResult(final String testModelItemId, final int status, final long stopTimestamp) throws Exception;
+
+
+	@Override
+	final public String end(final String testModelItemId, final int status, final long stopTimestamp)
+			throws IllegalArgumentException, IllegalStateException {
+		final boolean noSubCollector = subCollector == null;
+		final String id = doEnd(testModelItemId, status, stopTimestamp);
+		if(noSubCollector) {
+			setStatusAndParentStatus(status);
+			--level;
+		}
+		return id;
+	}
+
+	@Override
+	final public String end(final String testModelItemId, final long stopTimestamp)
+			throws IllegalArgumentException, IllegalStateException {
+		final int lastStatus = getContextStatus();
+		final boolean noSubCollector = subCollector == null;
+		final String id = doEnd(testModelItemId, lastStatus, stopTimestamp);
+		if(noSubCollector) {
+			setStatusAndParentStatus(lastStatus);
+			--level;
+		}
+		return id;
+	}
+
+	abstract protected String doEnd(final String testModelItemId, final int status, final long stopTimestamp)
+			throws IllegalArgumentException, IllegalStateException;
+
 
 	abstract protected void startInvokedTests();
 
@@ -109,15 +184,74 @@ public abstract class AbstractTestCollector implements BasicTestResultCollector 
 		release();
 	}
 
+
 	abstract void prepareSubCollectorRelease();
 
 	/**
 	 * Called by a SubCollector
 	 */
-	final void releaseSubCollector() {
+	final void releaseSubCollector(final int status) {
 		prepareSubCollectorRelease();
 		mergeResultFromCollector(subCollector);
 		subCollector = null;
+		setStatusAndParentStatus(status);
+	}
+
+	final protected int  getContextStatus() {
+		if(subCollector!=null) {
+			return subCollector.getContextStatus();
+		}
+		return this.levels[level];
+	}
+
+
+
+	private void setStatusAndParentStatus(final int newStatus) {
+		this.levels[level]=newStatus;
+		final int s = 10 * this.levels[level-1] + newStatus;
+		switch (s) {
+			case 00:
+			case 10:
+			case 11:
+			case 12:
+			case 13:
+			case 14:
+			case 15:
+			case 16:
+			case 17:
+				// Ignore FAILED 1 - *
+			case 20:
+			case 22:
+			case 23:
+			case 24:
+			case 25:
+			case 26:
+			case 27:
+				// Ignore SKIPPED 2 - * (except FAILED)
+			case 30:
+			case 33:
+			case 34:
+			case 35:
+			case 36:
+			case 37:
+				// Ignore NOT_APPLICABLE 3 - * (except FAILED, SKIPPED)
+			case 40:
+			case 44:
+			case 46:
+			case 47:
+				// Ignore INFO 4 - * (except FAILED, SKIPPED, NOT_APPLICABLE, WARNING)
+			case 50:
+			case 54:
+			case 55:
+			case 56:
+			case 57:
+				// Ignore WARNING 5 - * (except FAILED, SKIPPED, NOT_APPLICABLE)
+			case 70:
+				break;
+			default:
+				this.levels[level-1] = newStatus;
+				break;
+		}
 	}
 
 	abstract protected AbstractTestCollector createCalledTestCaseResultCollector(final AbstractTestCollector parentCollector,
@@ -129,4 +263,5 @@ public abstract class AbstractTestCollector implements BasicTestResultCollector 
 	abstract protected void mergeResultFromCollector(final AbstractTestCollector collector);
 
 	abstract protected String currentResultItemId();
+
 }

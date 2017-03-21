@@ -78,7 +78,7 @@ public abstract class AbstractTestResultCollector extends AbstractTestCollector 
 	}
 
 	@Override
-	final public String startTestTask(final String testModelItemId, final long startTimestamp)
+	final public String doStartTestTask(final String testModelItemId, final long startTimestamp)
 			throws IllegalArgumentException, IllegalStateException {
 		if (currentState != READY) {
 			throw new IllegalStateException(
@@ -96,7 +96,7 @@ public abstract class AbstractTestResultCollector extends AbstractTestCollector 
 	abstract protected String startTestModuleResult(final String resultedFrom, final long startTimestamp) throws Exception;
 
 	@Override
-	final public String startTestModule(final String testModelItemId, final long startTimestamp)
+	final public String doStartTestModule(final String testModelItemId, final long startTimestamp)
 			throws IllegalArgumentException, IllegalStateException {
 		if (currentState != WRITING_TEST_TASK_RESULT && currentState != TEST_MODULE_RESULT_FINISHED) {
 			throw new IllegalStateException(
@@ -195,7 +195,7 @@ public abstract class AbstractTestResultCollector extends AbstractTestCollector 
 			throws Exception;
 
 	@Override
-	final public String end(final String testModelItemId, final int status, final long stopTimestamp)
+	final public String doEnd(final String testModelItemId, final int status, final long stopTimestamp)
 			throws IllegalArgumentException, IllegalStateException {
 		try {
 			switch (currentState) {
@@ -284,6 +284,7 @@ public abstract class AbstractTestResultCollector extends AbstractTestCollector 
 	public String toString() {
 		final StringBuffer sb = new StringBuffer("TestResultCollector {");
 		sb.append("currentState=").append(currentState).append(", ");
+		sb.append("aggregatedSubStatus=").append(getContextStatus()).append(", ");
 		sb.append("subCollector=").append(subCollector != null ? subCollector.toString() : "none");
 		sb.append('}');
 		return sb.toString();

@@ -132,7 +132,7 @@ public abstract class AbstractTestStepResultCollector extends AbstractTestCollec
 	}
 
 	@Override
-	final public String end(final String testModelItemId, final int status, final long stopTimestamp)
+	final public String doEnd(final String testModelItemId, final int status, final long stopTimestamp)
 			throws IllegalArgumentException, IllegalStateException {
 		try {
 			switch (currentState) {
@@ -146,7 +146,7 @@ public abstract class AbstractTestStepResultCollector extends AbstractTestCollec
 			case WRITING_TEST_STEP_RESULT:
 				if (testModelItemId.equals(testStepId)) {
 					final String id = endTestStepResult(testModelItemId, status, stopTimestamp);
-					parentCollector.releaseSubCollector();
+					parentCollector.releaseSubCollector(status);
 					setState(RELEASED);
 					return id;
 				}
@@ -206,9 +206,9 @@ public abstract class AbstractTestStepResultCollector extends AbstractTestCollec
 	public String toString() {
 		final StringBuffer sb = new StringBuffer("TestResultCollector {");
 		sb.append("currentState=").append(currentState).append(", ");
+		sb.append("aggregatedSubStatus=").append(getContextStatus()).append(", ");
 		sb.append("subCollector=").append(subCollector != null ? subCollector.toString() : "none");
 		sb.append('}');
 		return sb.toString();
 	}
-
 }
