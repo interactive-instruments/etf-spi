@@ -140,11 +140,13 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 
 		doInit();
 
-		// Initial parse dir
-		filesChanged(null, Collections.singleton(watchDir.toPath()));
+		if (watchDir != null) {
+			// Initial parse dir
+			filesChanged(null, Collections.singleton(watchDir.toPath()));
 
-		// Start watching the directory
-		DirWatcher.register(this.watchDir.toPath(), this);
+			// Start watching the directory
+			DirWatcher.register(this.watchDir.toPath(), this);
+		}
 
 		this.initialized = true;
 	}

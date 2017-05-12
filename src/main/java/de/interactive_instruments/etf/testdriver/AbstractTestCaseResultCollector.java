@@ -150,9 +150,9 @@ public abstract class AbstractTestCaseResultCollector extends AbstractTestCollec
 			case TEST_STEP_RESULT_FINISHED:
 				if (testModelItemId.equals(testCaseId)) {
 					final String id = endTestCaseResult(testModelItemId, status, stopTimestamp);
-					if(status==1) {
+					if (status == 1) {
 						parentCollector.releaseSubCollector(2);
-					}else{
+					} else {
 						parentCollector.releaseSubCollector(status);
 					}
 					setState(RELEASED);

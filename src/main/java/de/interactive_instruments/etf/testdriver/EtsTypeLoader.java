@@ -16,10 +16,7 @@
 package de.interactive_instruments.etf.testdriver;
 
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import de.interactive_instruments.Configurable;
 import de.interactive_instruments.Releasable;
@@ -43,9 +40,24 @@ public abstract class EtsTypeLoader extends AbstractTypeLoader {
 
 	private final EidMap<ExecutableTestSuiteDto> etsCache = new DefaultEidMap<>(new HashMap<>(32));
 
+	/**
+	 * File loaders
+	 *
+	 * @param dataStorageCallback
+	 * @param builders
+	 */
 	protected EtsTypeLoader(final DataStorage dataStorageCallback,
 			final List<TypeBuildingFileVisitor.TypeBuilder<? extends Dto>> builders) {
 		super(dataStorageCallback, builders);
+	}
+
+	/**
+	 * Other loaders, not using TypeBuilder
+	 *
+	 * @param dataStorageCallback
+	 */
+	protected EtsTypeLoader(final DataStorage dataStorageCallback) {
+		super(dataStorageCallback, Collections.EMPTY_LIST);
 	}
 
 	@Override

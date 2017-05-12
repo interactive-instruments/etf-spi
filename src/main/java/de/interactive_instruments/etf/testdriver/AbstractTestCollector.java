@@ -15,10 +15,10 @@
  */
 package de.interactive_instruments.etf.testdriver;
 
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
 
 /**
  * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
@@ -28,9 +28,8 @@ public abstract class AbstractTestCollector implements BasicTestResultCollector 
 	protected AbstractTestCollector subCollector = null;
 	protected final static Logger logger = LoggerFactory.getLogger(TestResultCollector.class);
 
-	private int levels[] = new int[] { 6, 6, 6, 6, 6, 6, 6 };
+	private int levels[] = new int[]{6, 6, 6, 6, 6, 6, 6};
 	private int level;
-
 
 	protected String doStartTestTask(final String resultedFrom, final long startTimestamp)
 			throws IllegalArgumentException, IllegalStateException {
@@ -41,13 +40,12 @@ public abstract class AbstractTestCollector implements BasicTestResultCollector 
 	@Override
 	public final String startTestTask(final String resultedFrom, final long startTimestamp)
 			throws IllegalArgumentException, IllegalStateException {
-		if(subCollector==null) {
+		if (subCollector == null) {
 			level = 1;
 			levels[level] = 6;
 		}
 		return doStartTestTask(resultedFrom, startTimestamp);
 	}
-
 
 	protected String doStartTestModule(final String resultedFrom, final long startTimestamp)
 			throws IllegalArgumentException, IllegalStateException {
@@ -58,7 +56,7 @@ public abstract class AbstractTestCollector implements BasicTestResultCollector 
 	@Override
 	public final String startTestModule(final String resultedFrom, final long startTimestamp)
 			throws IllegalArgumentException, IllegalStateException {
-		if(subCollector==null) {
+		if (subCollector == null) {
 			level = 2;
 			levels[level] = 6;
 		}
@@ -71,7 +69,7 @@ public abstract class AbstractTestCollector implements BasicTestResultCollector 
 	}
 
 	protected final String startTestCaseResult(final String resultedFrom, final long startTimestamp) throws Exception {
-		if(subCollector==null) {
+		if (subCollector == null) {
 			level = 3;
 			levels[level] = 6;
 		}
@@ -87,34 +85,35 @@ public abstract class AbstractTestCollector implements BasicTestResultCollector 
 	abstract protected String doStartTestStepResult(final String resultedFrom, final long startTimestamp) throws Exception;
 
 	protected final String startTestStepResult(final String resultedFrom, final long startTimestamp) throws Exception {
-		if(subCollector==null) {
+		if (subCollector == null) {
 			level = 4;
 			levels[level] = 6;
 		}
 		return doStartTestStepResult(resultedFrom, startTimestamp);
 	}
 
-	abstract protected String endTestStepResult(final String testModelItemId, final int status, final long stopTimestamp) throws Exception;
+	abstract protected String endTestStepResult(final String testModelItemId, final int status, final long stopTimestamp)
+			throws Exception;
 
 	abstract protected String doStartTestAssertionResult(final String resultedFrom, final long startTimestamp) throws Exception;
 
 	protected final String startTestAssertionResult(final String resultedFrom, final long startTimestamp) throws Exception {
-		if(subCollector==null) {
+		if (subCollector == null) {
 			level = 5;
 			levels[level] = 6;
 		}
 		return doStartTestAssertionResult(resultedFrom, startTimestamp);
 	}
 
-	abstract protected String endTestAssertionResult(final String testModelItemId, final int status, final long stopTimestamp) throws Exception;
-
+	abstract protected String endTestAssertionResult(final String testModelItemId, final int status, final long stopTimestamp)
+			throws Exception;
 
 	@Override
 	final public String end(final String testModelItemId, final int status, final long stopTimestamp)
 			throws IllegalArgumentException, IllegalStateException {
 		final boolean noSubCollector = subCollector == null;
 		final String id = doEnd(testModelItemId, status, stopTimestamp);
-		if(noSubCollector) {
+		if (noSubCollector) {
 			setStatusAndParentStatus(status);
 			--level;
 		}
@@ -127,7 +126,7 @@ public abstract class AbstractTestCollector implements BasicTestResultCollector 
 		final int lastStatus = getContextStatus();
 		final boolean noSubCollector = subCollector == null;
 		final String id = doEnd(testModelItemId, lastStatus, stopTimestamp);
-		if(noSubCollector) {
+		if (noSubCollector) {
 			setStatusAndParentStatus(lastStatus);
 			--level;
 		}
@@ -136,7 +135,6 @@ public abstract class AbstractTestCollector implements BasicTestResultCollector 
 
 	abstract protected String doEnd(final String testModelItemId, final int status, final long stopTimestamp)
 			throws IllegalArgumentException, IllegalStateException;
-
 
 	abstract protected void startInvokedTests();
 
@@ -154,28 +152,28 @@ public abstract class AbstractTestCollector implements BasicTestResultCollector 
 
 	@Override
 	public final void addMessage(final String s) {
-		if(subCollector!=null) {
+		if (subCollector != null) {
 			subCollector.doAddMessage(s);
-		}else{
+		} else {
 			doAddMessage(s);
 		}
 	}
 
 	@Override
 	public final void addMessage(final String s, final Map<String, String> map) {
-		if(subCollector!=null) {
-			subCollector.doAddMessage(s,map);
-		}else{
-			doAddMessage(s,map);
+		if (subCollector != null) {
+			subCollector.doAddMessage(s, map);
+		} else {
+			doAddMessage(s, map);
 		}
 	}
 
 	@Override
 	public final void addMessage(final String s, final String... strings) {
-		if(subCollector!=null) {
-			subCollector.doAddMessage(s,strings);
-		}else{
-			doAddMessage(s,strings);
+		if (subCollector != null) {
+			subCollector.doAddMessage(s, strings);
+		} else {
+			doAddMessage(s, strings);
 		}
 	}
 
@@ -183,7 +181,6 @@ public abstract class AbstractTestCollector implements BasicTestResultCollector 
 		logger.error("Releasing collector due to an error");
 		release();
 	}
-
 
 	abstract void prepareSubCollectorRelease();
 
@@ -197,60 +194,58 @@ public abstract class AbstractTestCollector implements BasicTestResultCollector 
 		setStatusAndParentStatus(status);
 	}
 
-	final protected int  getContextStatus() {
-		if(subCollector!=null) {
+	final protected int getContextStatus() {
+		if (subCollector != null) {
 			return subCollector.getContextStatus();
 		}
 		return this.levels[level];
 	}
 
-
-
 	private void setStatusAndParentStatus(final int newStatus) {
-		this.levels[level]=newStatus;
-		final int s = 10 * this.levels[level-1] + newStatus;
+		this.levels[level] = newStatus;
+		final int s = 10 * this.levels[level - 1] + newStatus;
 		switch (s) {
-			case 00:
-			case 10:
-			case 11:
-			case 12:
-			case 13:
-			case 14:
-			case 15:
-			case 16:
-			case 17:
-				// Ignore FAILED 1 - *
-			case 20:
-			case 22:
-			case 23:
-			case 24:
-			case 25:
-			case 26:
-			case 27:
-				// Ignore SKIPPED 2 - * (except FAILED)
-			case 30:
-			case 33:
-			case 34:
-			case 35:
-			case 36:
-			case 37:
-				// Ignore NOT_APPLICABLE 3 - * (except FAILED, SKIPPED)
-			case 40:
-			case 44:
-			case 46:
-			case 47:
-				// Ignore INFO 4 - * (except FAILED, SKIPPED, NOT_APPLICABLE, WARNING)
-			case 50:
-			case 54:
-			case 55:
-			case 56:
-			case 57:
-				// Ignore WARNING 5 - * (except FAILED, SKIPPED, NOT_APPLICABLE)
-			case 70:
-				break;
-			default:
-				this.levels[level-1] = newStatus;
-				break;
+		case 00:
+		case 10:
+		case 11:
+		case 12:
+		case 13:
+		case 14:
+		case 15:
+		case 16:
+		case 17:
+			// Ignore FAILED 1 - *
+		case 20:
+		case 22:
+		case 23:
+		case 24:
+		case 25:
+		case 26:
+		case 27:
+			// Ignore SKIPPED 2 - * (except FAILED)
+		case 30:
+		case 33:
+		case 34:
+		case 35:
+		case 36:
+		case 37:
+			// Ignore NOT_APPLICABLE 3 - * (except FAILED, SKIPPED)
+		case 40:
+		case 44:
+		case 46:
+		case 47:
+			// Ignore INFO 4 - * (except FAILED, SKIPPED, NOT_APPLICABLE, WARNING)
+		case 50:
+		case 54:
+		case 55:
+		case 56:
+		case 57:
+			// Ignore WARNING 5 - * (except FAILED, SKIPPED, NOT_APPLICABLE)
+		case 70:
+			break;
+		default:
+			this.levels[level - 1] = newStatus;
+			break;
 		}
 	}
 
