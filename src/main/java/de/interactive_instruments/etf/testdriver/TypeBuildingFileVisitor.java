@@ -88,7 +88,7 @@ public final class TypeBuildingFileVisitor implements FileVisitor<Path> {
 			return dependencies != null ? dependencies.values() : null;
 		}
 
-		final void removeAlreadyBuildedDependencies(final Set<String> skipIds) {
+		final void removeBuiltDependencies(final Set<String> skipIds) {
 			dependencies.keySet().removeAll(skipIds);
 		}
 
@@ -177,7 +177,7 @@ public final class TypeBuildingFileVisitor implements FileVisitor<Path> {
 
 		// Remove builders for already build types
 		if (skipIds != null) {
-			typeBuilderCmdColl.forEach(b -> b.removeAlreadyBuildedDependencies(skipIds));
+			typeBuilderCmdColl.forEach(b -> b.removeBuiltDependencies(skipIds));
 		}
 
 		// Set all known builders
