@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import de.interactive_instruments.etf.EtfConstants;
@@ -27,8 +26,8 @@ import de.interactive_instruments.etf.dal.dao.DataStorage;
 import de.interactive_instruments.etf.dal.dto.Dto;
 import de.interactive_instruments.etf.dal.dto.capabilities.TagDto;
 import de.interactive_instruments.etf.dal.dto.capabilities.TestObjectTypeDto;
-import de.interactive_instruments.etf.dal.dto.test.ExecutableTestSuiteDto;
 import de.interactive_instruments.etf.dal.dto.translation.TranslationTemplateBundleDto;
+import de.interactive_instruments.etf.model.EidHolderMap;
 import de.interactive_instruments.exceptions.InitializationException;
 import de.interactive_instruments.exceptions.InvalidStateTransitionException;
 import de.interactive_instruments.exceptions.config.ConfigurationException;
@@ -38,11 +37,11 @@ import de.interactive_instruments.properties.ConfigPropertyHolder;
 /**
  * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
  */
-public final class MetadataTypeLoader extends AbstractTypeLoader {
+public final class MetadataFileTypeLoader extends AbstractFileTypeLoader {
 
 	private final ConfigProperties configProperties;
 
-	public MetadataTypeLoader(final DataStorage dataStorageCallback) {
+	public MetadataFileTypeLoader(final DataStorage dataStorageCallback) {
 		super(dataStorageCallback, new ArrayList<TypeBuildingFileVisitor.TypeBuilder<? extends Dto>>() {
 			{
 				add(new TranslationTemplateBundleBuilder(dataStorageCallback.getDao(TranslationTemplateBundleDto.class)));
@@ -92,5 +91,11 @@ public final class MetadataTypeLoader extends AbstractTypeLoader {
 	@Override
 	public ConfigPropertyHolder getConfigurationProperties() {
 		return this.configProperties;
+	}
+
+	@Override
+	public boolean resolveCrossTestDriverDependencies(final EidHolderMap<Dto> types) {
+		// Not required yet
+		return true;
 	}
 }

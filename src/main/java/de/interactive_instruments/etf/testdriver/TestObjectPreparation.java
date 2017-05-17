@@ -15,17 +15,33 @@
  */
 package de.interactive_instruments.etf.testdriver;
 
-import java.util.Collection;
-
-import de.interactive_instruments.etf.dal.dto.test.ExecutableTestSuiteDto;
-import de.interactive_instruments.etf.model.EID;
+import de.interactive_instruments.etf.dal.dto.capabilities.TestObjectDto;
+import de.interactive_instruments.exceptions.InitializationException;
 
 /**
  * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
  */
-public interface EtsTypeLoader extends TypeLoader {
+public interface TestObjectPreparation {
 
-	Collection<ExecutableTestSuiteDto> getExecutableTestSuites();
+	/**
+	 * Init Test Object
+	 *
+	 * @param testObjectDto
+	 */
+	void init(final TestObjectDto testObjectDto) throws InitializationException;
 
-	ExecutableTestSuiteDto getExecutableTestSuiteById(final EID id);
+	/**
+	 * Background task after initial creation
+	 *
+	 * @param testObject
+	 * @return
+	 */
+	Task<TestObjectDto> initialPrepareTask(final TestObjectDto testObject);
+
+	/**
+	 * Executed before a Test Run
+	 *
+	 * @param testObjectDto
+	 */
+	void prepareBeforeRun(final TestObjectDto testObjectDto) throws InitializationException;
 }

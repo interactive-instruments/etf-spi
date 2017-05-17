@@ -15,9 +15,7 @@
  */
 package de.interactive_instruments.etf.testdriver;
 
-import static de.interactive_instruments.etf.EtfConstants.ETF_ATTACHMENT_DIR;
-import static de.interactive_instruments.etf.EtfConstants.ETF_DATA_STORAGE_NAME;
-import static de.interactive_instruments.etf.EtfConstants.ETF_TESTDRIVERS_DIR;
+import static de.interactive_instruments.etf.EtfConstants.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,9 +30,7 @@ import de.interactive_instruments.IFile;
 import de.interactive_instruments.etf.component.ComponentInfo;
 import de.interactive_instruments.etf.component.ComponentLoadingException;
 import de.interactive_instruments.etf.component.ComponentNotLoadedException;
-import de.interactive_instruments.etf.dal.dao.WriteDao;
 import de.interactive_instruments.etf.dal.dto.IncompleteDtoException;
-import de.interactive_instruments.etf.dal.dto.capabilities.TestObjectTypeDto;
 import de.interactive_instruments.etf.dal.dto.run.TestRunDto;
 import de.interactive_instruments.etf.dal.dto.run.TestTaskDto;
 import de.interactive_instruments.etf.dal.dto.test.ExecutableTestSuiteDto;

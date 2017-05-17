@@ -33,6 +33,10 @@ import de.interactive_instruments.Releasable;
 import de.interactive_instruments.etf.dal.dao.DataStorage;
 import de.interactive_instruments.etf.dal.dao.WriteDao;
 import de.interactive_instruments.etf.dal.dto.Dto;
+import de.interactive_instruments.etf.model.DefaultEidHolderMap;
+import de.interactive_instruments.etf.model.DefaultEidMap;
+import de.interactive_instruments.etf.model.EidHolderMap;
+import de.interactive_instruments.etf.model.EidMap;
 import de.interactive_instruments.exceptions.InitializationException;
 import de.interactive_instruments.exceptions.InvalidStateTransitionException;
 import de.interactive_instruments.exceptions.ObjectWithIdNotFoundException;
@@ -45,7 +49,7 @@ import de.interactive_instruments.io.MultiFileFilter;
 /**
  * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
  */
-public abstract class AbstractTypeLoader implements Configurable, Releasable, FileChangeListener {
+public abstract class AbstractFileTypeLoader implements TypeLoader, FileChangeListener {
 
 	protected final DataStorage dataStorageCallback;
 
@@ -61,7 +65,7 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 	// Synced between all AbstractTypeLoaders
 	private final static Set<String> globalRegisteredTypeIds = new ConcurrentSkipListSet<>();
 
-	protected AbstractTypeLoader(final DataStorage dataStorageCallback,
+	protected AbstractFileTypeLoader(final DataStorage dataStorageCallback,
 			final List<TypeBuildingFileVisitor.TypeBuilder<? extends Dto>> builders) {
 		this.dataStorageCallback = dataStorageCallback;
 		this.builders = builders;
@@ -126,6 +130,11 @@ public abstract class AbstractTypeLoader implements Configurable, Releasable, Fi
 			registerTypes(newPropagatedDtos.values());
 			propagatedDtos.putAll(newPropagatedDtos);
 		}
+	}
+
+	@Override
+	public EidHolderMap<Dto> getTypes() {
+		return new DefaultEidHolderMap<>(propagatedDtos.values()).unmodifiable();
 	}
 
 	protected abstract void doBeforeVisit(final Set<Path> dirs);
