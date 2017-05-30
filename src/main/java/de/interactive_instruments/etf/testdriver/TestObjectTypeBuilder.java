@@ -32,7 +32,7 @@ import de.interactive_instruments.etf.dal.dto.capabilities.TestObjectTypeDto;
 import de.interactive_instruments.exceptions.StorageException;
 
 /**
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 public final class TestObjectTypeBuilder implements TypeBuildingFileVisitor.TypeBuilder<TestObjectTypeDto> {
 
@@ -63,7 +63,7 @@ public final class TestObjectTypeBuilder implements TypeBuildingFileVisitor.Type
 				final File file = path.toFile();
 				final FileInputStream fileInputStream = new FileInputStream(file);
 				return writeDao.add(fileInputStream);
-			} catch (IOException | StorageException e) {
+			} catch (IOException e) {
 				logger.error("Error creating Test Object Type from file {}", path, e);
 			}
 			return null;

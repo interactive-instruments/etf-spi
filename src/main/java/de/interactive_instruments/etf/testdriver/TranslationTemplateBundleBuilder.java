@@ -32,7 +32,7 @@ import de.interactive_instruments.etf.dal.dto.translation.TranslationTemplateBun
 import de.interactive_instruments.exceptions.StorageException;
 
 /**
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 public final class TranslationTemplateBundleBuilder
 		implements TypeBuildingFileVisitor.TypeBuilder<TranslationTemplateBundleDto> {
@@ -68,7 +68,7 @@ public final class TranslationTemplateBundleBuilder
 					dto.setSource(file.toURI());
 					return dto;
 				});
-			} catch (IOException | StorageException e) {
+			} catch (IOException e) {
 				logger.error("Error creating Translation Template Bundle from file {}", path, e);
 			}
 			return null;

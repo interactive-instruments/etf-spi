@@ -32,7 +32,7 @@ import de.interactive_instruments.etf.dal.dto.capabilities.TagDto;
 import de.interactive_instruments.exceptions.StorageException;
 
 /**
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 public final class TagBuilder implements TypeBuildingFileVisitor.TypeBuilder<TagDto> {
 
@@ -62,7 +62,7 @@ public final class TagBuilder implements TypeBuildingFileVisitor.TypeBuilder<Tag
 				final File file = path.toFile();
 				final FileInputStream fileInputStream = new FileInputStream(file);
 				return writeDao.add(fileInputStream);
-			} catch (IOException | StorageException e) {
+			} catch (IOException e) {
 				logger.error("Error creating Tag from file {}", path, e);
 			}
 			return null;
