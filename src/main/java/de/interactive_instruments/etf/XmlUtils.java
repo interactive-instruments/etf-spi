@@ -31,7 +31,7 @@ import javax.xml.xpath.XPathFactory;
 import de.interactive_instruments.SUtils;
 
 /**
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 public class XmlUtils {
 	private XmlUtils() {}

@@ -25,7 +25,7 @@ import de.interactive_instruments.exceptions.StorageException;
 
 /**
  *
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 public abstract class AbstractPreparedDtoCollection<T extends Dto> implements PreparedDtoCollection<T> {
 

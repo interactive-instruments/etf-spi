@@ -19,7 +19,7 @@ import java.time.Instant;
 import java.util.Date;
 
 /**
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 public class AbstractTestTaskProgress implements TaskProgress {
 

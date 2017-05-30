@@ -18,10 +18,10 @@ package de.interactive_instruments.etf.testdriver;
 import de.interactive_instruments.Configurable;
 import de.interactive_instruments.Releasable;
 import de.interactive_instruments.etf.dal.dto.Dto;
-import de.interactive_instruments.etf.model.EidHolderMap;
+import de.interactive_instruments.etf.model.EidSet;
 
 /**
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 public interface TypeLoader extends Configurable, Releasable {
 
@@ -31,17 +31,5 @@ public interface TypeLoader extends Configurable, Releasable {
 	 *
 	 * @return
 	 */
-	EidHolderMap<Dto> getTypes();
-
-	/**
-	 * Fired after all Test Drivers have been loaded.
-	 * Used to reference DTOs across different Test Drivers.
-	 * Type loaders exchange their DTOs via {@link #getTypes()}
-	 * and complete DTOs within this method. If the TypeLoader has resolved
-	 * all dependencies, true must be returned.
-	 *
-	 * @param types completed types
-	 * @return true if all types could be loaded, false if there are still unknown types
-	 */
-	boolean resolveCrossTestDriverDependencies(final EidHolderMap<Dto> types);
+	EidSet<? extends Dto> getTypes();
 }

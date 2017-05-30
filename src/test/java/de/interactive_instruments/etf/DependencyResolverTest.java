@@ -32,7 +32,7 @@ import de.interactive_instruments.exceptions.ObjectWithIdNotFoundException;
 import de.interactive_instruments.exceptions.StorageException;
 
 /**
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DependencyResolverTest {

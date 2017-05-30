@@ -33,7 +33,7 @@ import de.interactive_instruments.IFile;
 /**
  * Default Test Run Logger based on the slf4j SimpleLogger
  *
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  *
  *
  * <p>The logging implementation is taken from the

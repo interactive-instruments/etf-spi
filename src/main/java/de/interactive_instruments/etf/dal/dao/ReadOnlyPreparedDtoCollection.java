@@ -25,7 +25,7 @@ import de.interactive_instruments.etf.model.EID;
  *
  * A LazyLoad reference map
  *
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 public abstract class ReadOnlyPreparedDtoCollection<T extends Dto> extends AbstractPreparedDtoCollection<T> {
 

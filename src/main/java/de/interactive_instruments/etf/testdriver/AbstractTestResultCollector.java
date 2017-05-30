@@ -21,7 +21,7 @@ import java.util.Map;
 
 /**
  *
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 public abstract class AbstractTestResultCollector extends AbstractTestCollector implements TestResultCollector {
 

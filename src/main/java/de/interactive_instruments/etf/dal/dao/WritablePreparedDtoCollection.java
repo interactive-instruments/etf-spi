@@ -24,7 +24,7 @@ import de.interactive_instruments.exceptions.StorageException;
 /**
  * A LazyLoad reference map with write-back functionality
  *
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 public abstract class WritablePreparedDtoCollection<T extends Dto> extends AbstractPreparedDtoCollection<T> {
 

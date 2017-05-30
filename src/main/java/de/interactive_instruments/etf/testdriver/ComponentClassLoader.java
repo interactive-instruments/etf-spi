@@ -47,7 +47,7 @@ import de.interactive_instruments.exceptions.ExcUtils;
  * - Try loading from dependency ClassLoaders
  * - Try loading from parent
  *
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 final class ComponentClassLoader extends ClassLoader implements Closeable {
 	private final static Logger logger = LoggerFactory.getLogger(ComponentClassLoader.class);

@@ -19,7 +19,7 @@ import static de.interactive_instruments.etf.testdriver.AbstractTestStepResultCo
 
 /**
  *
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 public abstract class AbstractTestStepResultCollector extends AbstractTestCollector {
 

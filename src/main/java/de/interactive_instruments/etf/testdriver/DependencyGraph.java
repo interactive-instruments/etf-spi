@@ -27,7 +27,7 @@ import de.interactive_instruments.exceptions.ExcUtils;
 /**
  * A dependency graph which detects cycles and returns a list in topological order
  *
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 final public class DependencyGraph<T extends NestedDependencyHolder<T>> {
 
