@@ -17,31 +17,29 @@ package de.interactive_instruments.etf.testdriver;
 
 import java.util.*;
 
+import de.interactive_instruments.etf.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.interactive_instruments.etf.dal.dto.IncompleteDtoException;
 import de.interactive_instruments.etf.dal.dto.run.TestTaskDto;
 import de.interactive_instruments.etf.dal.dto.test.ExecutableTestSuiteDto;
-import de.interactive_instruments.etf.model.DefaultEidMap;
-import de.interactive_instruments.etf.model.EID;
-import de.interactive_instruments.etf.model.EidMap;
 import de.interactive_instruments.exceptions.ObjectWithIdNotFoundException;
 
 /**
  * Realizes the chain of responsibility pattern. Responsible TestDrivers
  * add known Executable Test Suites and their dependencies.
  *
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 final class EtsLookupSet {
 
 	// TestDriver ID -> list of unkown ETS
 	private final EidMap<Set<EID>> unknownEts = new DefaultEidMap<>(new LinkedHashMap<>());
-	private final Set<ExecutableTestSuiteDto> knownEts = new HashSet<>();
+	private final EidHolderMap<ExecutableTestSuiteDto> knownEts = new DefaultEidHolderMap<>();
 	private final Logger logger = LoggerFactory.getLogger(EtsLookupSet.class);
 
-	public EtsLookupSet(final TestTaskDto testTaskDto) throws IncompleteDtoException {
+	EtsLookupSet(final TestTaskDto testTaskDto) throws IncompleteDtoException {
 		testTaskDto.ensureBasicValidity();
 		final EID testDriverId = testTaskDto.getExecutableTestSuite().getTestDriver().getId();
 		final EID etsId = testTaskDto.getExecutableTestSuite().getId();
@@ -58,14 +56,13 @@ final class EtsLookupSet {
 			this.testDriverId = testDriverId;
 		}
 
-		public Set<EID> getUnknownEts() {
+		public Set<EID> getUnknownEtsIds() {
 			return etsLookupSet.unknownEts.get(testDriverId);
 		}
 
-		public void addKnownEts(final Set<ExecutableTestSuiteDto> knownEts) {
+		public void addKnownEts(final EidSet<ExecutableTestSuiteDto> knownEts) {
 			this.etsLookupSet.addKnownEts(testDriverId, knownEts);
 		}
-
 	}
 
 	public EtsLookupRequest etsResolver(final EID testDriverId) {
@@ -115,7 +112,7 @@ final class EtsLookupSet {
 			});
 			throw new ObjectWithIdNotFoundException(allUnkownIds.iterator().next().getId());
 		}
-		return Collections.unmodifiableSet(knownEts);
+		return knownEts.unmodifiable().toSet();
 	}
 
 }

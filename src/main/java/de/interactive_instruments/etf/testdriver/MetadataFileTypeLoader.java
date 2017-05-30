@@ -35,7 +35,7 @@ import de.interactive_instruments.properties.ConfigProperties;
 import de.interactive_instruments.properties.ConfigPropertyHolder;
 
 /**
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 public final class MetadataFileTypeLoader extends AbstractFileTypeLoader {
 
@@ -69,12 +69,12 @@ public final class MetadataFileTypeLoader extends AbstractFileTypeLoader {
 	}
 
 	@Override
-	protected void doBeforeDeregister(final Dto dto) {
+	protected void doBeforeDeregister(final Collection<? extends Dto> dtos) {
 		// nothing to do here
 	}
 
 	@Override
-	protected void doAfterRegister(final Collection<Dto> dtos) {
+	protected void doAfterRegister(final Collection<? extends Dto> dtos) {
 		// nothing to do here
 	}
 
@@ -91,11 +91,5 @@ public final class MetadataFileTypeLoader extends AbstractFileTypeLoader {
 	@Override
 	public ConfigPropertyHolder getConfigurationProperties() {
 		return this.configProperties;
-	}
-
-	@Override
-	public boolean resolveCrossTestDriverDependencies(final EidHolderMap<Dto> types) {
-		// Not required yet
-		return true;
 	}
 }

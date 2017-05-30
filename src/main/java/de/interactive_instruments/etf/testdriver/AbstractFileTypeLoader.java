@@ -24,19 +24,15 @@ import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collectors;
 
+import de.interactive_instruments.etf.model.DefaultEidSet;
+import de.interactive_instruments.etf.model.EidSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.interactive_instruments.Configurable;
 import de.interactive_instruments.IFile;
-import de.interactive_instruments.Releasable;
 import de.interactive_instruments.etf.dal.dao.DataStorage;
 import de.interactive_instruments.etf.dal.dao.WriteDao;
 import de.interactive_instruments.etf.dal.dto.Dto;
-import de.interactive_instruments.etf.model.DefaultEidHolderMap;
-import de.interactive_instruments.etf.model.DefaultEidMap;
-import de.interactive_instruments.etf.model.EidHolderMap;
-import de.interactive_instruments.etf.model.EidMap;
 import de.interactive_instruments.exceptions.InitializationException;
 import de.interactive_instruments.exceptions.InvalidStateTransitionException;
 import de.interactive_instruments.exceptions.ObjectWithIdNotFoundException;
@@ -47,7 +43,7 @@ import de.interactive_instruments.io.FileChangeListener;
 import de.interactive_instruments.io.MultiFileFilter;
 
 /**
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 public abstract class AbstractFileTypeLoader implements TypeLoader, FileChangeListener {
 
@@ -76,12 +72,11 @@ public abstract class AbstractFileTypeLoader implements TypeLoader, FileChangeLi
 		Thread.currentThread().setContextClassLoader(contextClassloader);
 	}
 
-	protected abstract void doBeforeDeregister(final Dto dto);
+	protected abstract void doBeforeDeregister(final Collection<? extends Dto> dtos);
 
 	private void deregisterTypes(final Collection<Dto> values) {
+		doBeforeDeregister(values);
 		values.stream().forEach(dto -> {
-			doBeforeDeregister(dto);
-
 			globalRegisteredTypeIds.remove(dto.getId().getId());
 
 			try {
@@ -92,7 +87,7 @@ public abstract class AbstractFileTypeLoader implements TypeLoader, FileChangeLi
 		});
 	}
 
-	protected abstract void doAfterRegister(final Collection<Dto> dtos);
+	protected abstract void doAfterRegister(final Collection<? extends Dto> dtos);
 
 	private void registerTypes(final Collection<Dto> values) {
 		// Register ID
@@ -133,8 +128,8 @@ public abstract class AbstractFileTypeLoader implements TypeLoader, FileChangeLi
 	}
 
 	@Override
-	public EidHolderMap<Dto> getTypes() {
-		return new DefaultEidHolderMap<>(propagatedDtos.values()).unmodifiable();
+	public EidSet<? extends Dto> getTypes() {
+		return new DefaultEidSet<>(propagatedDtos.values()).unmodifiable();
 	}
 
 	protected abstract void doBeforeVisit(final Set<Path> dirs);
@@ -178,6 +173,8 @@ public abstract class AbstractFileTypeLoader implements TypeLoader, FileChangeLi
 		DirWatcher.unregister(this);
 		this.propagatedDtos.clear();
 	}
+
+
 
 	@Override
 	public String toString() {
