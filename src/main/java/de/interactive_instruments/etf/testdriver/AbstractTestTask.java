@@ -33,7 +33,7 @@ import de.interactive_instruments.exceptions.config.ConfigurationException;
 
 /**
  *
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 public abstract class AbstractTestTask implements TestTask {
 
@@ -61,7 +61,13 @@ public abstract class AbstractTestTask implements TestTask {
 	public final void run() throws Exception {
 		Thread.currentThread().setContextClassLoader(classLoader);
 		fireRunning();
-		doRun();
+		try {
+			doRun();
+		}catch (final Exception e) {
+			testTaskDto.getTestTaskResult().setInternalError(e);
+			fireFailed();
+			return;
+		}
 		fireCompleted();
 	}
 
@@ -263,7 +269,7 @@ public abstract class AbstractTestTask implements TestTask {
 							(progress.getCurrentState() == TaskState.STATE.INITIALIZING) ||
 							(progress.getCurrentState() == TaskState.STATE.INITIALIZED) ||
 							(progress.getCurrentState() == TaskState.STATE.RUNNING));
-		} catch (InvalidStateTransitionException e) {
+		} catch (final InvalidStateTransitionException e) {
 			ExcUtils.suppress(e);
 		}
 		progress.stopInstant = Instant.now();

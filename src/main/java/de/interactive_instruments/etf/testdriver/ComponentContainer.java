@@ -22,6 +22,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.interactive_instruments.CLUtils;
+import de.interactive_instruments.exceptions.ExcUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +41,7 @@ import de.interactive_instruments.properties.PropertyHolder;
 /**
  * A container for the component which holds and manages a loaded jar.
  *
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 final class ComponentContainer implements Releasable {
 	private final File componentJar;
@@ -100,7 +103,9 @@ final class ComponentContainer implements Releasable {
 		}
 	}
 
-	TestDriver loadAndInit(final PropertyHolder properties) throws ComponentLoadingException, ConfigurationException {
+	TestDriver loadAndInit(
+			final PropertyHolder properties,
+			final ExecutableTestSuiteLifeCycleListenerMediator mediator) throws ComponentLoadingException, ConfigurationException {
 		if (this.testDriverInitializerClass == null) {
 			final String oldId = this.id;
 			prepareTestDriver();
@@ -116,7 +121,14 @@ final class ComponentContainer implements Releasable {
 			Thread.currentThread().setContextClassLoader(cl);
 			// Construct the new test driver
 			testDriver = (TestDriver) testDriverInitializerClass.newInstance();
+			try {
+				logger.info("Preparing Test Driver {} {} {}", this.testDriver.getInfo().getName(), this.testDriver.getInfo().getVersion(),
+						logger.isDebugEnabled() ? CLUtils.getManifestAttributeValue(this.testDriver.getClass(), "Build-Date") : "" );
+			}catch (final Exception e) {
+				ExcUtils.suppress(e);
+			}
 			this.testDriver.getConfigurationProperties().setPropertiesFrom(properties, true);
+			this.testDriver.setLifeCycleMediator(mediator);
 			this.testDriver.init();
 		} catch (InvalidStateTransitionException | InitializationException | IllegalAccessException
 				| InstantiationException e) {

@@ -18,11 +18,11 @@ package de.interactive_instruments.etf.testdriver;
 import static de.interactive_instruments.etf.EtfConstants.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import de.interactive_instruments.SUtils;
+import de.interactive_instruments.etf.model.EidHolderMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +45,7 @@ import de.interactive_instruments.properties.ConfigPropertyHolder;
 /**
  *
  *
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 public class DefaultTestDriverManager implements TestDriverManager {
 
@@ -83,11 +83,12 @@ public class DefaultTestDriverManager implements TestDriverManager {
 			configProperties.getPropertyAsFile(ETF_ATTACHMENT_DIR).expectDirIsWritable();
 			final IFile testDriversDir = configProperties.getPropertyAsFile(ETF_TESTDRIVERS_DIR);
 			testDriversDir.expectDirIsReadable();
-			loader = new TestDriverLoader(testDriversDir);
+			loader = new TestDriverLoader(testDriversDir, new LifeCycleListenerMediator());
 		} catch (IOException e) {
 			throw new InitializationException(e);
 		}
 		loader.setConfig(configProperties);
+
 		initialized = true;
 	}
 
@@ -194,7 +195,7 @@ public class DefaultTestDriverManager implements TestDriverManager {
 				testRunLogger.info(" TestTask {} ({})", ++counter, testTaskDto.getId());
 				testRunLogger.info(" will perform tests on Test Object '{}' by using Executable Test Suite {}",
 						testTaskDto.getTestObject().getLabel(), testTaskDto.getExecutableTestSuite().getDescriptiveLabel());
-				if (testTaskDto.getArguments() != null) {
+				if (testTaskDto.getArguments() != null && !testTaskDto.getArguments().values().isEmpty() ) {
 					testRunLogger.info(" with parameters: ");
 					testTaskDto.getArguments().values().entrySet()
 							.forEach(p -> testRunLogger.info("{} = {}", p.getKey(), p.getValue()));
@@ -215,4 +216,27 @@ public class DefaultTestDriverManager implements TestDriverManager {
 		}
 	}
 
+	private class LifeCycleListenerMediator implements ExecutableTestSuiteLifeCycleListenerMediator {
+
+		final Set<ExecutableTestSuiteLifeCycleListener> listeners = new HashSet<>();
+
+		@Override
+		public void registerListener(final ExecutableTestSuiteLifeCycleListener executableTestSuiteLifeCycleListener) {
+			listeners.add(executableTestSuiteLifeCycleListener);
+		}
+
+		@Override
+		public void deregisterListener(final ExecutableTestSuiteLifeCycleListener executableTestSuiteLifeCycleListener) {
+			listeners.remove(executableTestSuiteLifeCycleListener);
+		}
+
+		@Override
+		public void lifeCycleChange(final Object caller, final EventType eventType, final EidHolderMap<ExecutableTestSuiteDto> eidHolderMap) {
+			for (final ExecutableTestSuiteLifeCycleListener listener : listeners) {
+				if(!listener.equals(caller)) {
+					listener.lifeCycleChange(caller, eventType, eidHolderMap);
+				}
+			}
+		}
+	}
 }

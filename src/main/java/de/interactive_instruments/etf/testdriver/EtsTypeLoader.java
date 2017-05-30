@@ -15,17 +15,18 @@
  */
 package de.interactive_instruments.etf.testdriver;
 
-import java.util.Collection;
-
 import de.interactive_instruments.etf.dal.dto.test.ExecutableTestSuiteDto;
 import de.interactive_instruments.etf.model.EID;
+import de.interactive_instruments.etf.model.EidHolderMap;
+
+import java.util.Set;
 
 /**
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 public interface EtsTypeLoader extends TypeLoader {
 
-	Collection<ExecutableTestSuiteDto> getExecutableTestSuites();
-
 	ExecutableTestSuiteDto getExecutableTestSuiteById(final EID id);
+
+	void setLifeCycleListener(final ExecutableTestSuiteLifeCycleListener mediator);
 }

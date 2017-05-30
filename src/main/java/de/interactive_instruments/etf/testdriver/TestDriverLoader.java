@@ -38,7 +38,7 @@ import de.interactive_instruments.properties.PropertyHolder;
 /**
  * Test Driver Loader which manages and loads the Test Drivers from Jar files
  *
- * @author J. Herrmann ( herrmann <aT) interactive-instruments (doT> de )
+ * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 final class TestDriverLoader implements Releasable {
 
@@ -49,6 +49,7 @@ final class TestDriverLoader implements Releasable {
 	private final IFile testDriverDir;
 	private Logger logger = LoggerFactory.getLogger(TestDriverLoader.class);
 	private long testDriverLasModified = 0;
+	private ExecutableTestSuiteLifeCycleListenerMediator mediator;
 
 	private static class TestDriverJarFileFilter implements FilenameFilter {
 		@Override
@@ -58,7 +59,12 @@ final class TestDriverLoader implements Releasable {
 	}
 
 	public TestDriverLoader(final IFile testDriverDir) throws ComponentLoadingException {
+		this(testDriverDir, null);
+	}
+
+	public TestDriverLoader(final IFile testDriverDir, final ExecutableTestSuiteLifeCycleListenerMediator mediator) throws ComponentLoadingException {
 		this.testDriverDir = testDriverDir;
+		this.mediator = mediator;
 		recreateTestComponents();
 	}
 
@@ -98,7 +104,7 @@ final class TestDriverLoader implements Releasable {
 	 * Load component
 	 * @param id
 	 */
-	public synchronized void load(String id) throws ComponentLoadingException, ConfigurationException {
+	public synchronized void load(final String id) throws ComponentLoadingException, ConfigurationException {
 		if (this.testDrivers.containsKey(id)) {
 			throw new ComponentLoadingException("TestDriver " + id + " already loaded");
 		}
@@ -116,7 +122,7 @@ final class TestDriverLoader implements Releasable {
 			driverContainer.release();
 			recreateTestComponents();
 		}
-		this.testDrivers.put(id, this.driverContainer.get(id).loadAndInit(config));
+		this.testDrivers.put(id, this.driverContainer.get(id).loadAndInit(config, mediator));
 	}
 
 	/**
