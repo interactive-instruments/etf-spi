@@ -40,12 +40,6 @@ public abstract class AbstractOutputFormat implements OutputFormat {
 		return label;
 	}
 
-	/**
-	 * Compare Eids
-	 *
-	 * @param o
-	 * @return
-	 */
 	@Override
 	public int compareTo(final OutputFormat o) {
 		return getId().compareTo(o.getId());

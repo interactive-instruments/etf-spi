@@ -247,6 +247,7 @@ public class DefaultTestRunLogger extends MarkerIgnoringBase implements TestRunL
 	 * Is the given log level currently enabled?
 	 *
 	 * @param logLevel is this level enabled?
+	 * @return true if log level is enabled, false otherwise
 	 */
 	protected boolean isLevelEnabled(int logLevel) {
 		// log level are numerically ordered so can use simple numeric

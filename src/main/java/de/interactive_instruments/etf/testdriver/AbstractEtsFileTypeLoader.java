@@ -43,8 +43,8 @@ public abstract class AbstractEtsFileTypeLoader extends AbstractFileTypeLoader i
 	/**
 	 * File loaders
 	 *
-	 * @param dataStorageCallback
-	 * @param builders
+	 * @param dataStorageCallback Storage callback
+	 * @param builders Type Builders
 	 */
 	protected AbstractEtsFileTypeLoader(final DataStorage dataStorageCallback,
 			final TypeBuildingFileVisitor.TypeBuilder<? extends Dto>...builders) {

@@ -39,14 +39,14 @@ public interface TypeDetector extends EidHolder {
 		/**
 		 * Set the Test Object type for the Test Object
 		 *
-		 * @param dto
+		 * @param dto Test Object Dto
 		 */
 		void setType(final TestObjectDto dto);
 
 		/**
 		 * All Types a Detector can detect
 		 *
-		 * @return
+		 * @return list of TestObjectTypeDto
 		 */
 		Collection<TestObjectTypeDto> getDetectibleTypes();
 	}

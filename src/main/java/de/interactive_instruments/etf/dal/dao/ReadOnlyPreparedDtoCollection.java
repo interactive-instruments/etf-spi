@@ -37,7 +37,7 @@ public abstract class ReadOnlyPreparedDtoCollection<T extends Dto> extends Abstr
 	/**
 	 * Unsupported operation
 	 *
-	 * @throws UnsupportedOperationException
+	 * @throws UnsupportedOperationException always
 	 */
 	@Override
 	public Dto put(final EID key, final Dto value) {
@@ -47,7 +47,7 @@ public abstract class ReadOnlyPreparedDtoCollection<T extends Dto> extends Abstr
 	/**
 	 * Unsupported operation
 	 *
-	 * @throws UnsupportedOperationException
+	 * @throws UnsupportedOperationException always
 	 */
 	@Override
 	public T remove(final Object key) {
@@ -57,7 +57,7 @@ public abstract class ReadOnlyPreparedDtoCollection<T extends Dto> extends Abstr
 	/**
 	 * Unsupported operation
 	 *
-	 * @throws UnsupportedOperationException
+	 * @throws UnsupportedOperationException always
 	 */
 	@Override
 	public void putAll(final Map<? extends EID, ? extends T> m) {
@@ -67,7 +67,7 @@ public abstract class ReadOnlyPreparedDtoCollection<T extends Dto> extends Abstr
 	/**
 	 * Unsupported operation
 	 *
-	 * @throws UnsupportedOperationException
+	 * @throws UnsupportedOperationException always
 	 */
 	@Override
 	public void clear() {

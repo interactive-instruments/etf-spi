@@ -44,7 +44,7 @@ final public class DependencyGraph<T extends NestedDependencyHolder<T>> {
 	/**
 	 * Add an object which has dependencies
 	 *
-	 * @param node
+	 * @param node node in dependency graph
 	 */
 	public void addDependency(final T node) {
 		Objects.requireNonNull("Dependency node is null");
@@ -70,7 +70,7 @@ final public class DependencyGraph<T extends NestedDependencyHolder<T>> {
 	/**
 	 * Add a collection of objects that have dependencies
 	 *
-	 * @param nodes
+	 * @param nodes in dependency graph
 	 */
 	public void addAllDependencies(final Collection<T> nodes) {
 		Objects.requireNonNull("Dependencies are null");
@@ -108,7 +108,7 @@ final public class DependencyGraph<T extends NestedDependencyHolder<T>> {
 	 *
 	 * The index n-object, is the one object that does not depend on other objects.
 	 *
-	 * @return
+	 * @return ordered list of nodes
 	 */
 	public List<T> sortIgnoreCylce() {
 		final DependencyGraph<T> reversesGraph = reverseGraph();
@@ -133,7 +133,8 @@ final public class DependencyGraph<T extends NestedDependencyHolder<T>> {
 	 *
 	 * The index n-object, is the one object that does not depend on other objects.
 	 *
-	 * @return
+	 * @throws CyclicDependencyException if a cycle has been detected
+	 * @return ordered list of nodes
 	 */
 	public List<T> sort() throws CyclicDependencyException {
 		final DependencyGraph<T> reversesGraph = reverseGraph();

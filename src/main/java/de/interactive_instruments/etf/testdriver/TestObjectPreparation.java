@@ -26,22 +26,24 @@ public interface TestObjectPreparation {
 	/**
 	 * Init Test Object
 	 *
-	 * @param testObjectDto
+	 * @param testObjectDto Test Object Dto
+	 * @throws InitializationException if the Test Object can not be initialized
 	 */
 	void init(final TestObjectDto testObjectDto) throws InitializationException;
 
 	/**
 	 * Background task after initial creation
 	 *
-	 * @param testObject
-	 * @return
+	 * @param testObjectDto Test Object Dto
+	 * @return executable background task
 	 */
-	Task<TestObjectDto> initialPrepareTask(final TestObjectDto testObject);
+	Task<TestObjectDto> initialPrepareTask(final TestObjectDto testObjectDto);
 
 	/**
 	 * Executed before a Test Run
 	 *
-	 * @param testObjectDto
+	 * @param testObjectDto Test Object Dto
+	 * @throws InitializationException if the Test Object can not be initialized
 	 */
 	void prepareBeforeRun(final TestObjectDto testObjectDto) throws InitializationException;
 }

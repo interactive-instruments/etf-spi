@@ -29,7 +29,7 @@ public interface TypeLoader extends Configurable, Releasable {
 	 * Return all DTOs the TypeLoader could create after
 	 * {@link #init()} has been called.
 	 *
-	 * @return
+	 * @return set of created Dtos
 	 */
 	EidSet<? extends Dto> getTypes();
 }

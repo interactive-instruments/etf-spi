@@ -47,7 +47,7 @@ public final class TypeBuildingFileVisitor implements FileVisitor<Path> {
 	/**
 	 * Prepare Type Builder with file
 	 *
-	 * @param <T>
+	 * @param <T> Dto type
 	 */
 	@FunctionalInterface
 	public interface TypeBuilder<T extends Dto> {
@@ -64,7 +64,7 @@ public final class TypeBuildingFileVisitor implements FileVisitor<Path> {
 	/**
 	 * File based type builder
 	 *
-	 * @param <T>
+	 * @param <T> Dto type
 	 */
 	public abstract static class TypeBuilderCmd<T extends Dto> implements NestedDependencyHolder<TypeBuilderCmd<T>> {
 		protected final Path path;

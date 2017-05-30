@@ -70,8 +70,8 @@ public abstract class WritablePreparedDtoCollection<T extends Dto> extends Abstr
 	/**
 	 * Removes all Dtos from the data storage!
 	 *
-	 * @throws StorageException
-	 * @throws ObjectWithIdNotFoundException
+	 * @throws StorageException if an internal error occurs
+	 * @throws ObjectWithIdNotFoundException if the item with the id is not found
 	 */
 	public void removeAll() throws StorageException, ObjectWithIdNotFoundException {
 		for (final EID id : map.keySet()) {
@@ -84,7 +84,7 @@ public abstract class WritablePreparedDtoCollection<T extends Dto> extends Abstr
 	 * To prevent unintended deletion of all Dtos this method will always throw a
 	 * Unsupported operation exception. Use removeAll() method instead.
 	 *
-	 * @throw UnsupportedOperationException always
+	 * @throws UnsupportedOperationException always
 	 *
 	 */
 	@Override
