@@ -128,13 +128,19 @@ final class TestDriverLoader implements Releasable {
 	/**
 	 * Load all components
 	 */
-	public synchronized void load() throws ConfigurationException, ComponentLoadingException {
+	public synchronized void load() throws ComponentLoadingException {
 		if (testDriverDir.lastModified() != testDriverLasModified) {
 			recreateTestComponents();
 		}
 		for (final ComponentContainer testDriverContainer : this.driverContainer.values()) {
 			final String id = testDriverContainer.getId();
-			load(id);
+			try {
+				load(id);
+			} catch (final ComponentLoadingException e) {
+				logger.error("Failed to load component ", e);
+			} catch (ConfigurationException e) {
+				logger.error("Failed to configure component ", e);
+			}
 		}
 	}
 
