@@ -67,14 +67,14 @@ public abstract class AbstractEtsFileTypeLoader extends AbstractFileTypeLoader i
 
 	@Override
 	protected void doAfterRegister(final Collection<? extends Dto> dtos) {
-		final EidHolderMap<ExecutableTestSuiteDto> etsToAdd = new DefaultEidHolderMap<>();
+		final EidHolderMap<ExecutableTestSuiteDto> etsToCache = new DefaultEidHolderMap<>();
 		for (final Dto dto : dtos) {
 			if(dto instanceof ExecutableTestSuiteDto) {
 				final ExecutableTestSuiteDto ets = (ExecutableTestSuiteDto) dto;
-				// Check if the builder already added the ETS
-				if(etsDao.exists(ets.getId())) {
+				// Check if the builder already added the ETS and activated it
+				if(etsDao.exists(ets.getId()) && !etsDao.isDisabled(ets.getId())) {
 					// Just cache the ETS and fire the added event
-					etsToAdd.add(ets);
+					etsToCache.add(ets);
 				}else {
 					// Check for resolved dependencies
 					boolean depsResolved = true;
@@ -90,7 +90,7 @@ public abstract class AbstractEtsFileTypeLoader extends AbstractFileTypeLoader i
 					if (depsResolved) {
 						try {
 							etsDao.add(ets);
-							etsToAdd.add(ets);
+							etsToCache.add(ets);
 						} catch (StorageException e) {
 							logger.error("Could not add ETS ",e);
 						}
@@ -100,7 +100,7 @@ public abstract class AbstractEtsFileTypeLoader extends AbstractFileTypeLoader i
 				}
 			}
 		}
-		cacheEts(etsToAdd);
+		cacheEts(etsToCache);
 	}
 
 	private void cacheEts(final EidHolderMap<ExecutableTestSuiteDto> ets) {
@@ -115,14 +115,16 @@ public abstract class AbstractEtsFileTypeLoader extends AbstractFileTypeLoader i
 	}
 
 	/**
-	 * Hold the Ets back until the dependent Ets emerges
+	 * Hold the Ets back until all cross-Test Driver dependencies emerge
 	 *
-	 * @param ets
+	 * @param ets ETS with unresolved dependencies
 	 */
 	private void markEtsWithUnresolvedDependencies(final ExecutableTestSuiteDto ets) {
 		// Ensure the ETS is not in the cache
 		etsCache.remove(ets);
 		etsWithUnresolvedDeps.add(ets);
+		logger.info("Disabling Test Suite {} until all cross-Test Driver dependencies can be resolved",
+				ets.getId());
 	}
 
 	@Override
@@ -193,6 +195,8 @@ public abstract class AbstractEtsFileTypeLoader extends AbstractFileTypeLoader i
 			}
 			if(dependenciesResolved) {
 				executableTestSuiteDto.setDependencies(resolvedDeps);
+				logger.info("Resolved {} cross-Test Driver dependencies for Executable Test Suite {}",
+						resolvedDeps.size(), executableTestSuiteDto.getId());
 				etsToAdd.add(executableTestSuiteDto);
 			}
 		}
