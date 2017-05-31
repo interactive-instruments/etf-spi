@@ -64,7 +64,10 @@ public abstract class AbstractTestTask implements TestTask {
 		try {
 			doRun();
 		}catch (final Exception e) {
-			testTaskDto.getTestTaskResult().setInternalError(e);
+			// Check if the error message was already reported by the result collector
+			if(testTaskDto.getTestTaskResult().getErrorMessage()==null) {
+				testTaskDto.getTestTaskResult().setInternalError(e);
+			}
 			fireFailed();
 			return;
 		}
