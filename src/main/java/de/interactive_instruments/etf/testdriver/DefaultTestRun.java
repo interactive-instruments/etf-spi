@@ -156,7 +156,7 @@ final class DefaultTestRun implements TestRun {
 		return testTasks;
 	}
 
-	public void setTestTasks(final List<TestTask> testTasks) {
+	void setTestTasks(final List<TestTask> testTasks) {
 		this.testTasks = testTasks;
 	}
 
@@ -165,7 +165,6 @@ final class DefaultTestRun implements TestRun {
 		fireRunning();
 		for (; currentRunIndex < testTasks.size(); currentRunIndex++) {
 			fireTestTaskInitializing(testTasks.get(currentRunIndex));
-			// TODO
 			testTasks.get(currentRunIndex).init();
 			fireTestTaskRunning(testTasks.get(currentRunIndex));
 			testTasks.get(currentRunIndex).run();

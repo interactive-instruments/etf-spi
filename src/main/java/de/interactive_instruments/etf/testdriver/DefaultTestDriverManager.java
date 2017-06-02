@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import de.interactive_instruments.SUtils;
-import de.interactive_instruments.etf.model.EidHolderMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,12 +28,16 @@ import de.interactive_instruments.IFile;
 import de.interactive_instruments.etf.component.ComponentInfo;
 import de.interactive_instruments.etf.component.ComponentLoadingException;
 import de.interactive_instruments.etf.component.ComponentNotLoadedException;
+import de.interactive_instruments.etf.dal.dao.DataStorageRegistry;
+import de.interactive_instruments.etf.dal.dao.StreamWriteDao;
 import de.interactive_instruments.etf.dal.dto.IncompleteDtoException;
+import de.interactive_instruments.etf.dal.dto.result.TestTaskResultDto;
 import de.interactive_instruments.etf.dal.dto.run.TestRunDto;
 import de.interactive_instruments.etf.dal.dto.run.TestTaskDto;
 import de.interactive_instruments.etf.dal.dto.test.ExecutableTestSuiteDto;
 import de.interactive_instruments.etf.model.EID;
 import de.interactive_instruments.etf.model.EidFactory;
+import de.interactive_instruments.etf.model.EidHolderMap;
 import de.interactive_instruments.exceptions.InitializationException;
 import de.interactive_instruments.exceptions.ObjectWithIdNotFoundException;
 import de.interactive_instruments.exceptions.config.ConfigurationException;
@@ -195,7 +197,7 @@ public class DefaultTestDriverManager implements TestDriverManager {
 				testRunLogger.info(" TestTask {} ({})", ++counter, testTaskDto.getId());
 				testRunLogger.info(" will perform tests on Test Object '{}' by using Executable Test Suite {}",
 						testTaskDto.getTestObject().getLabel(), testTaskDto.getExecutableTestSuite().getDescriptiveLabel());
-				if (testTaskDto.getArguments() != null && !testTaskDto.getArguments().values().isEmpty() ) {
+				if (testTaskDto.getArguments() != null && !testTaskDto.getArguments().values().isEmpty()) {
 					testRunLogger.info(" with parameters: ");
 					testTaskDto.getArguments().values().entrySet()
 							.forEach(p -> testRunLogger.info("{} = {}", p.getKey(), p.getValue()));
@@ -204,7 +206,9 @@ public class DefaultTestDriverManager implements TestDriverManager {
 						.getTestDriverById(testTaskDto.getExecutableTestSuite().getTestDriver().getId().toString());
 				final TestTask testTask = tD.createTestTask(testTaskDto);
 
-				testTask.setResultListener(collectorFactory.createTestResultCollector(testRunLogger, testTaskDto));
+				testTask.setResulPersistor(new DefaultTestTaskPersistor(testTaskDto,
+						collectorFactory.createTestResultCollector(testRunLogger, testTaskDto),
+						(StreamWriteDao) DataStorageRegistry.instance().get("default").getDao(TestTaskResultDto.class)));
 				testTasks.add(testTask);
 			}
 			((DefaultTestRun) testRun).setTestTasks(testTasks);
@@ -231,9 +235,10 @@ public class DefaultTestDriverManager implements TestDriverManager {
 		}
 
 		@Override
-		public void lifeCycleChange(final Object caller, final EventType eventType, final EidHolderMap<ExecutableTestSuiteDto> eidHolderMap) {
+		public void lifeCycleChange(final Object caller, final EventType eventType,
+				final EidHolderMap<ExecutableTestSuiteDto> eidHolderMap) {
 			for (final ExecutableTestSuiteLifeCycleListener listener : listeners) {
-				if(!listener.equals(caller)) {
+				if (!listener.equals(caller)) {
 					listener.lifeCycleChange(caller, eventType, eidHolderMap);
 				}
 			}

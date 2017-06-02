@@ -17,6 +17,7 @@ package de.interactive_instruments.etf.testdriver;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -42,10 +43,14 @@ public abstract class AbstractTestTask implements TestTask {
 	private Future<TestTaskResultDto> future;
 	protected final AbstractTestTaskProgress progress;
 	private final ClassLoader classLoader;
-	// TODO make private when interface is implemented in BaseX
-	protected TestResultCollector resultCollector;
+	// TODO check if this can be made private when
+	// TestResultCollector is implemented in BaseX
+	// protected TestResultCollector resultCollector;
+	private TestTaskResultPersistor persistor;
 
-	protected AbstractTestTask(final TestTaskDto testTaskDto, final AbstractTestTaskProgress progress,
+	protected AbstractTestTask(
+			final TestTaskDto testTaskDto,
+			final AbstractTestTaskProgress progress,
 			final ClassLoader classLoader) {
 		this.testTaskDto = testTaskDto;
 		this.progress = progress;
@@ -63,10 +68,12 @@ public abstract class AbstractTestTask implements TestTask {
 		fireRunning();
 		try {
 			doRun();
-		}catch (final Exception e) {
+		} catch (final Exception e) {
 			// Check if the error message was already reported by the result collector
-			if(testTaskDto.getTestTaskResult().getErrorMessage()==null) {
-				testTaskDto.getTestTaskResult().setInternalError(e);
+			if (!persistor.resultPersisted()) {
+				// The test driver failed to report the issue, so we need to persist
+				// the ugly exception here.
+				persistor.getResultCollector().internalError(e);
 			}
 			fireFailed();
 			return;
@@ -87,8 +94,8 @@ public abstract class AbstractTestTask implements TestTask {
 	public final void init() throws ConfigurationException, InvalidStateTransitionException, InitializationException {
 		Thread.currentThread().setContextClassLoader(classLoader);
 		fireInitializing();
-		if (resultCollector == null) {
-			throw new IllegalStateException("Result Listener not set");
+		if (persistor == null) {
+			throw new IllegalStateException("Result persistor not set");
 		}
 		doInit();
 		getLogger().info("TestRunTask initialized");
@@ -143,7 +150,15 @@ public abstract class AbstractTestTask implements TestTask {
 
 	@Override
 	public TestRunLogger getLogger() {
-		return resultCollector.getLogger();
+		return persistor.getResultCollector().getLogger();
+	}
+
+	protected TestTaskResultPersistor getPersistor() {
+		return Objects.requireNonNull(persistor, "Persistor not set");
+	}
+
+	protected TestResultCollector getCollector() {
+		return getPersistor().getResultCollector();
 	}
 
 	@Override
@@ -159,8 +174,7 @@ public abstract class AbstractTestTask implements TestTask {
 	@Override
 	public void setFuture(final Future<TestTaskResultDto> future) throws IllegalStateException {
 		if (this.future != null) {
-			throw new IllegalStateException(
-					"The already set call back object can not be changed!");
+			throw new IllegalStateException("Call back object already set!");
 		}
 		this.future = future;
 	}
@@ -218,11 +232,15 @@ public abstract class AbstractTestTask implements TestTask {
 	}
 
 	@Override
-	public void setResultListener(final TestResultCollector listener) {
-		this.resultCollector = listener;
+	public void setResulPersistor(final TestTaskResultPersistor persistor) throws IllegalStateException {
+		if (this.persistor != null) {
+			throw new IllegalStateException("TestTaskResultPersistor already set");
+		}
+		this.persistor = Objects.requireNonNull(persistor, "TestTaskResultPersistor is null");
+		final TestResultCollector resultCollector = persistor.getResultCollector();
 		this.progress.setLogReader(resultCollector.getLogger());
-		if (this.resultCollector instanceof AbstractTestResultCollector) {
-			((AbstractTestResultCollector) this.resultCollector).setTaskProgress(this.progress);
+		if (resultCollector instanceof AbstractTestResultCollector) {
+			((AbstractTestResultCollector) resultCollector).setTaskProgress(this.progress);
 		}
 	}
 

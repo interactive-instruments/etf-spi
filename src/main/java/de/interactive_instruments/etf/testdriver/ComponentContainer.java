@@ -22,17 +22,17 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.interactive_instruments.CLUtils;
-import de.interactive_instruments.exceptions.ExcUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.interactive_instruments.CLUtils;
 import de.interactive_instruments.IFile;
 import de.interactive_instruments.JarUtils;
 import de.interactive_instruments.Releasable;
 import de.interactive_instruments.etf.component.ComponentInfo;
 import de.interactive_instruments.etf.component.ComponentLoadingException;
+import de.interactive_instruments.exceptions.ExcUtils;
 import de.interactive_instruments.exceptions.InitializationException;
 import de.interactive_instruments.exceptions.InvalidStateTransitionException;
 import de.interactive_instruments.exceptions.config.ConfigurationException;
@@ -105,7 +105,8 @@ final class ComponentContainer implements Releasable {
 
 	TestDriver loadAndInit(
 			final PropertyHolder properties,
-			final ExecutableTestSuiteLifeCycleListenerMediator mediator) throws ComponentLoadingException, ConfigurationException {
+			final ExecutableTestSuiteLifeCycleListenerMediator mediator)
+			throws ComponentLoadingException, ConfigurationException {
 		if (this.testDriverInitializerClass == null) {
 			final String oldId = this.id;
 			prepareTestDriver();
@@ -122,9 +123,11 @@ final class ComponentContainer implements Releasable {
 			// Construct the new test driver
 			testDriver = (TestDriver) testDriverInitializerClass.newInstance();
 			try {
-				logger.info("Preparing Test Driver {} {} {}", this.testDriver.getInfo().getName(), this.testDriver.getInfo().getVersion(),
-						logger.isDebugEnabled() ? CLUtils.getManifestAttributeValue(this.testDriver.getClass(), "Build-Date") : "" );
-			}catch (final Exception e) {
+				logger.info("Preparing Test Driver {} {} {}", this.testDriver.getInfo().getName(),
+						this.testDriver.getInfo().getVersion(),
+						logger.isDebugEnabled() ? CLUtils.getManifestAttributeValue(this.testDriver.getClass(), "Build-Date")
+								: "");
+			} catch (final Exception e) {
 				ExcUtils.suppress(e);
 			}
 			this.testDriver.getConfigurationProperties().setPropertiesFrom(properties, true);

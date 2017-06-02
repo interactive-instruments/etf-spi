@@ -40,8 +40,9 @@ public class DefaultTestTaskPersistor implements TestTaskResultPersistor, TestTa
 			final TestResultCollector collector,
 			final StreamWriteDao<TestTaskResultDto> writeDao) {
 		this.testTaskDto = Objects.requireNonNull(testTaskDto, "Test Task is null");
-		this.collector = Objects.requireNonNull(collector, "Collector is null");
 		this.writeDao = Objects.requireNonNull(writeDao, "DAO is null");
+		this.collector = Objects.requireNonNull(collector, "Collector is null");
+		this.collector.registerTestTaskEndListener(this);
 	}
 
 	private void checkState() {

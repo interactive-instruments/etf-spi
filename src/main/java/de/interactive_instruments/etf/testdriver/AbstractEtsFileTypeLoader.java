@@ -30,7 +30,8 @@ import de.interactive_instruments.exceptions.StorageException;
 /**
  * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
-public abstract class AbstractEtsFileTypeLoader extends AbstractFileTypeLoader implements EtsTypeLoader, ExecutableTestSuiteLifeCycleListener {
+public abstract class AbstractEtsFileTypeLoader extends AbstractFileTypeLoader
+		implements EtsTypeLoader, ExecutableTestSuiteLifeCycleListener {
 
 	private final EidHolderMap<ExecutableTestSuiteDto> etsCache = new DefaultEidHolderMap<>(new HashMap<>(64));
 
@@ -47,16 +48,16 @@ public abstract class AbstractEtsFileTypeLoader extends AbstractFileTypeLoader i
 	 * @param builders Type Builders
 	 */
 	protected AbstractEtsFileTypeLoader(final DataStorage dataStorageCallback,
-			final TypeBuildingFileVisitor.TypeBuilder<? extends Dto>...builders) {
+			final TypeBuildingFileVisitor.TypeBuilder<? extends Dto>... builders) {
 		super(dataStorageCallback, Arrays.asList(builders));
-		etsDao = (WriteDao<ExecutableTestSuiteDto>)dataStorageCallback.getDao(ExecutableTestSuiteDto.class);
+		etsDao = (WriteDao<ExecutableTestSuiteDto>) dataStorageCallback.getDao(ExecutableTestSuiteDto.class);
 	}
 
 	@Override
 	protected void doBeforeDeregister(final Collection<? extends Dto> dtos) {
-		if (dtos!=null && dtos.iterator().next() instanceof ExecutableTestSuiteDto) {
+		if (dtos != null && dtos.iterator().next() instanceof ExecutableTestSuiteDto) {
 			etsCache.removeAll(dtos);
-			if(this.listener!=null) {
+			if (this.listener != null) {
 				this.listener.lifeCycleChange(
 						this,
 						ExecutableTestSuiteLifeCycleListener.EventType.REMOVED,
@@ -69,13 +70,13 @@ public abstract class AbstractEtsFileTypeLoader extends AbstractFileTypeLoader i
 	protected void doAfterRegister(final Collection<? extends Dto> dtos) {
 		final EidHolderMap<ExecutableTestSuiteDto> etsToCache = new DefaultEidHolderMap<>();
 		for (final Dto dto : dtos) {
-			if(dto instanceof ExecutableTestSuiteDto) {
+			if (dto instanceof ExecutableTestSuiteDto) {
 				final ExecutableTestSuiteDto ets = (ExecutableTestSuiteDto) dto;
 				// Check if the builder already added the ETS and activated it
-				if(etsDao.exists(ets.getId()) && !etsDao.isDisabled(ets.getId())) {
+				if (etsDao.exists(ets.getId()) && !etsDao.isDisabled(ets.getId())) {
 					// Just cache the ETS and fire the added event
 					etsToCache.add(ets);
-				}else {
+				} else {
 					// Check for resolved dependencies
 					boolean depsResolved = true;
 					final Collection<ExecutableTestSuiteDto> deps = ets.getDependencies();
@@ -92,7 +93,7 @@ public abstract class AbstractEtsFileTypeLoader extends AbstractFileTypeLoader i
 							etsDao.add(ets);
 							etsToCache.add(ets);
 						} catch (StorageException e) {
-							logger.error("Could not add ETS ",e);
+							logger.error("Could not add ETS ", e);
 						}
 					} else {
 						markEtsWithUnresolvedDependencies(ets);
@@ -104,10 +105,10 @@ public abstract class AbstractEtsFileTypeLoader extends AbstractFileTypeLoader i
 	}
 
 	private void cacheEts(final EidHolderMap<ExecutableTestSuiteDto> ets) {
-		if(!ets.isEmpty()) {
+		if (!ets.isEmpty()) {
 			etsCache.putAll(ets);
 			etsWithUnresolvedDeps.removeAll(ets.asCollection());
-			if(this.listener!=null) {
+			if (this.listener != null) {
 				this.listener.lifeCycleChange(this,
 						ExecutableTestSuiteLifeCycleListener.EventType.CREATED, ets);
 			}
@@ -155,20 +156,20 @@ public abstract class AbstractEtsFileTypeLoader extends AbstractFileTypeLoader i
 
 	@Override
 	public void setLifeCycleListener(final ExecutableTestSuiteLifeCycleListener listener) {
-		this.listener=listener;
+		this.listener = listener;
 	}
 
 	@Override
 	public synchronized void lifeCycleChange(final Object caller, final EventType eventType, final EidHolderMap changedEts) {
 
-		if(eventType==EventType.CREATED && !this.etsWithUnresolvedDeps.isEmpty()) {
+		if (eventType == EventType.CREATED && !this.etsWithUnresolvedDeps.isEmpty()) {
 			resolveDep(changedEts);
-		}else if(eventType==EventType.REMOVED) {
+		} else if (eventType == EventType.REMOVED) {
 			// Check if there are ETS in the cache with the dependency
 			final List<ExecutableTestSuiteDto> invalidatedEts = new ArrayList<>();
 			for (final ExecutableTestSuiteDto etsCacheEntry : etsCache.values()) {
 				final EidHolderMap<ExecutableTestSuiteDto> deps = new DefaultEidHolderMap(etsCacheEntry.getDependencies());
-				if(deps!=null) {
+				if (deps != null) {
 					final EidHolderMap<ExecutableTestSuiteDto> invalidDeps = deps.getAll(changedEts.values());
 					invalidDeps.values().forEach(i -> i.setLabel(null));
 					markEtsWithUnresolvedDependencies(etsCacheEntry);
@@ -181,19 +182,19 @@ public abstract class AbstractEtsFileTypeLoader extends AbstractFileTypeLoader i
 	private void resolveDep(final EidMap<ExecutableTestSuiteDto> knownEts) {
 		final EidHolderMap<ExecutableTestSuiteDto> etsToAdd = new DefaultEidHolderMap<>();
 		for (final ExecutableTestSuiteDto executableTestSuiteDto : etsWithUnresolvedDeps.values()) {
-			boolean dependenciesResolved=true;
+			boolean dependenciesResolved = true;
 			final Collection<ExecutableTestSuiteDto> dependencies = executableTestSuiteDto.getDependencies();
 			final List<ExecutableTestSuiteDto> resolvedDeps = new ArrayList<>(dependencies.size());
 			for (final ExecutableTestSuiteDto dep : dependencies) {
 				// dependencies are ExecutableTestSuiteDtos without a label set
 				final ExecutableTestSuiteDto resolvedDep = knownEts.get(dep.getId());
-				if(resolvedDep==null && SUtils.isNullOrEmpty(dep.getLabel())) {
-					dependenciesResolved=false;
+				if (resolvedDep == null && SUtils.isNullOrEmpty(dep.getLabel())) {
+					dependenciesResolved = false;
 					break;
 				}
 				resolvedDeps.add(resolvedDep);
 			}
-			if(dependenciesResolved) {
+			if (dependenciesResolved) {
 				executableTestSuiteDto.setDependencies(resolvedDeps);
 				logger.info("Resolved {} cross-Test Driver dependencies for Executable Test Suite {}",
 						resolvedDeps.size(), executableTestSuiteDto.getId());

@@ -24,8 +24,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collectors;
 
-import de.interactive_instruments.etf.model.DefaultEidSet;
-import de.interactive_instruments.etf.model.EidSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +31,8 @@ import de.interactive_instruments.IFile;
 import de.interactive_instruments.etf.dal.dao.DataStorage;
 import de.interactive_instruments.etf.dal.dao.WriteDao;
 import de.interactive_instruments.etf.dal.dto.Dto;
+import de.interactive_instruments.etf.model.DefaultEidSet;
+import de.interactive_instruments.etf.model.EidSet;
 import de.interactive_instruments.exceptions.InitializationException;
 import de.interactive_instruments.exceptions.InvalidStateTransitionException;
 import de.interactive_instruments.exceptions.ObjectWithIdNotFoundException;
@@ -173,8 +173,6 @@ public abstract class AbstractFileTypeLoader implements TypeLoader, FileChangeLi
 		DirWatcher.unregister(this);
 		this.propagatedDtos.clear();
 	}
-
-
 
 	@Override
 	public String toString() {

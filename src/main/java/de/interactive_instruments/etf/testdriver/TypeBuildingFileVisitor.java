@@ -22,15 +22,15 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 
-import de.interactive_instruments.etf.dal.dto.test.ExecutableTestSuiteDto;
-import de.interactive_instruments.etf.model.DefaultEidSet;
-import de.interactive_instruments.etf.model.EidSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.interactive_instruments.IFile;
 import de.interactive_instruments.LogUtils;
 import de.interactive_instruments.etf.dal.dto.Dto;
+import de.interactive_instruments.etf.dal.dto.test.ExecutableTestSuiteDto;
+import de.interactive_instruments.etf.model.DefaultEidSet;
+import de.interactive_instruments.etf.model.EidSet;
 import de.interactive_instruments.etf.model.NestedDependencyHolder;
 
 /**

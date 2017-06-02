@@ -62,7 +62,8 @@ final class TestDriverLoader implements Releasable {
 		this(testDriverDir, null);
 	}
 
-	public TestDriverLoader(final IFile testDriverDir, final ExecutableTestSuiteLifeCycleListenerMediator mediator) throws ComponentLoadingException {
+	public TestDriverLoader(final IFile testDriverDir, final ExecutableTestSuiteLifeCycleListenerMediator mediator)
+			throws ComponentLoadingException {
 		this.testDriverDir = testDriverDir;
 		this.mediator = mediator;
 		recreateTestComponents();
