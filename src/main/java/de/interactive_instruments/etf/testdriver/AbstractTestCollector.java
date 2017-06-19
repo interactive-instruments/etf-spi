@@ -206,6 +206,8 @@ public abstract class AbstractTestCollector implements BasicTestResultCollector 
 		final int s = 10 * this.levels[level - 1] + newStatus;
 		switch (s) {
 		case 00:
+		case 03:
+			// Ignore PASSED 0 - NOT_APPLICABLE
 		case 10:
 		case 11:
 		case 12:
@@ -223,13 +225,12 @@ public abstract class AbstractTestCollector implements BasicTestResultCollector 
 		case 26:
 		case 27:
 			// Ignore SKIPPED 2 - * (except FAILED)
-		case 30:
 		case 33:
 		case 34:
 		case 35:
 		case 36:
 		case 37:
-			// Ignore NOT_APPLICABLE 3 - * (except FAILED, SKIPPED)
+			// Ignore NOT_APPLICABLE 3 - * (except PASSED, FAILED, SKIPPED)
 		case 40:
 		case 44:
 		case 46:
