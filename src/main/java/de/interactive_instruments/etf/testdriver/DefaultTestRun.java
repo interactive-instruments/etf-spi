@@ -15,7 +15,6 @@
  */
 package de.interactive_instruments.etf.testdriver;
 
-import java.io.File;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -29,13 +28,7 @@ import org.slf4j.LoggerFactory;
 import de.interactive_instruments.IFile;
 import de.interactive_instruments.LogUtils;
 import de.interactive_instruments.TimeUtils;
-import de.interactive_instruments.etf.dal.dto.result.TestTaskResultDto;
 import de.interactive_instruments.etf.dal.dto.run.TestRunDto;
-import de.interactive_instruments.etf.dal.dto.run.TestTaskDto;
-import de.interactive_instruments.etf.dal.dto.test.TestAssertionDto;
-import de.interactive_instruments.etf.dal.dto.test.TestCaseDto;
-import de.interactive_instruments.etf.dal.dto.test.TestModuleDto;
-import de.interactive_instruments.etf.dal.dto.test.TestStepDto;
 import de.interactive_instruments.etf.model.EID;
 import de.interactive_instruments.exceptions.ExcUtils;
 import de.interactive_instruments.exceptions.InitializationException;
@@ -77,7 +70,12 @@ final class DefaultTestRun implements TestRun {
 						max = testTasks.get(currentRunIndex).getProgress().getMaxSteps();
 					}
 					if (max <= 0) {
-						max += testRunDto.getTestTasks().get(i).getExecutableTestSuite().getAssertionsSize();
+						final long lowestTestLevelItemSize = testRunDto.getTestTasks().get(i).getExecutableTestSuite()
+								.getLowestLevelItemSize();
+						if (lowestTestLevelItemSize == 0) {
+							throw new IllegalStateException("Executable Test Suite does not possess test items");
+						}
+						max += lowestTestLevelItemSize;
 					}
 					maxSteps += max;
 				}
@@ -170,7 +168,7 @@ final class DefaultTestRun implements TestRun {
 			testTasks.get(currentRunIndex).run();
 			fireTestTaskCompleted(testTasks.get(currentRunIndex));
 			overallStepsCompleted += testRunDto.getTestTasks().get(currentRunIndex).getExecutableTestSuite()
-					.getAssertionsSize();
+					.getLowestLevelItemSize();
 			testTasks.get(currentRunIndex).release();
 		}
 		fireCompleted();
