@@ -15,7 +15,9 @@
  */
 package de.interactive_instruments.etf.testdriver;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

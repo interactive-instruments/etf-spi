@@ -17,8 +17,6 @@ package de.interactive_instruments.etf.testdriver;
 
 import static de.interactive_instruments.etf.testdriver.AbstractTestResultCollector.ResultCollectorState.*;
 
-import java.util.Map;
-
 /**
  *
  * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )

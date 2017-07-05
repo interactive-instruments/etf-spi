@@ -20,7 +20,6 @@ import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.interactive_instruments.etf.model.FlatDependencyHolder;
 import de.interactive_instruments.etf.model.NestedDependencyHolder;
 import de.interactive_instruments.exceptions.ExcUtils;
 

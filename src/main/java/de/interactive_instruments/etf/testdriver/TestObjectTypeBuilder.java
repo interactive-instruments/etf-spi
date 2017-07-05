@@ -29,7 +29,6 @@ import de.interactive_instruments.etf.XmlUtils;
 import de.interactive_instruments.etf.dal.dao.Dao;
 import de.interactive_instruments.etf.dal.dao.StreamWriteDao;
 import de.interactive_instruments.etf.dal.dto.capabilities.TestObjectTypeDto;
-import de.interactive_instruments.exceptions.StorageException;
 
 /**
  * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )

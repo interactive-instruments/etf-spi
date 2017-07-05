@@ -15,8 +15,6 @@
  */
 package de.interactive_instruments.etf.testdriver.detection;
 
-import javax.xml.parsers.SAXParser;
-
 import org.xml.sax.ContentHandler;
 import org.xml.sax.XMLReader;
 

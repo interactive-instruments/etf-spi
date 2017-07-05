@@ -16,12 +16,10 @@
 package de.interactive_instruments.etf.testdriver;
 
 import java.io.InputStream;
-import java.util.List;
 import java.util.Objects;
 
 import de.interactive_instruments.etf.dal.dao.StreamWriteDao;
 import de.interactive_instruments.etf.dal.dto.result.TestTaskResultDto;
-import de.interactive_instruments.etf.dal.dto.run.TestRunDto;
 import de.interactive_instruments.etf.dal.dto.run.TestTaskDto;
 import de.interactive_instruments.exceptions.StorageException;
 

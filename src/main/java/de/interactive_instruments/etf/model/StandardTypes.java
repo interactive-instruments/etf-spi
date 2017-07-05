@@ -20,11 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import de.interactive_instruments.SUtils;
 import de.interactive_instruments.etf.dal.dto.test.TestItemTypeDto;
 import de.interactive_instruments.etf.dal.dto.translation.TranslationTemplateBundleDto;
 import de.interactive_instruments.etf.dal.dto.translation.TranslationTemplateDto;
-import de.interactive_instruments.etf.testdriver.TranslationTemplateBundleBuilder;
 
 /**
  * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )

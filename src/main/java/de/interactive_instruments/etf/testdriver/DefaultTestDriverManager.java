@@ -197,13 +197,16 @@ public class DefaultTestDriverManager implements TestDriverManager {
 				testRunLogger.info(" TestTask {} ({})", ++counter, testTaskDto.getId());
 				testRunLogger.info(" will perform tests on Test Object '{}' by using Executable Test Suite {}",
 						testTaskDto.getTestObject().getLabel(), testTaskDto.getExecutableTestSuite().getDescriptiveLabel());
-				if (testTaskDto.getArguments() != null && !testTaskDto.getArguments().values().isEmpty()) {
+				if (testTaskDto.getArguments() != null && !testTaskDto.getArguments().isEmpty()) {
 					testRunLogger.info(" with parameters: ");
 					testTaskDto.getArguments().values().entrySet()
 							.forEach(p -> testRunLogger.info("{} = {}", p.getKey(), p.getValue()));
 				}
+
 				final TestDriver tD = loader
-						.getTestDriverById(testTaskDto.getExecutableTestSuite().getTestDriver().getId().toString());
+						.getTestDriverById(Objects.requireNonNull(
+								testTaskDto.getExecutableTestSuite().getTestDriver(), "Test Driver unloaded during startup")
+								.getId().toString());
 				final TestTask testTask = tD.createTestTask(testTaskDto);
 
 				testTask.setResulPersistor(new DefaultTestTaskPersistor(testTaskDto,
