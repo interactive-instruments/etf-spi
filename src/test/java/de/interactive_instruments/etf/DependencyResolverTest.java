@@ -42,13 +42,13 @@ public class DependencyResolverTest {
 
 		final DependencyGraph<ExecutableTestSuiteDto> dependencyResolver = new DependencyGraph();
 
-		final ExecutableTestSuiteDto ets1 = CoreTestUtils.createEts(1);
-		final ExecutableTestSuiteDto ets2 = CoreTestUtils.createEts(2);
-		final ExecutableTestSuiteDto ets3 = CoreTestUtils.createEts(3);
-		final ExecutableTestSuiteDto ets4 = CoreTestUtils.createEts(4);
-		final ExecutableTestSuiteDto ets5 = CoreTestUtils.createEts(5);
-		final ExecutableTestSuiteDto ets6 = CoreTestUtils.createEts(6);
-		final ExecutableTestSuiteDto ets7 = CoreTestUtils.createEts(7);
+		final ExecutableTestSuiteDto ets1 = TestUtils.createEts(1);
+		final ExecutableTestSuiteDto ets2 = TestUtils.createEts(2);
+		final ExecutableTestSuiteDto ets3 = TestUtils.createEts(3);
+		final ExecutableTestSuiteDto ets4 = TestUtils.createEts(4);
+		final ExecutableTestSuiteDto ets5 = TestUtils.createEts(5);
+		final ExecutableTestSuiteDto ets6 = TestUtils.createEts(6);
+		final ExecutableTestSuiteDto ets7 = TestUtils.createEts(7);
 
 		ets1.addDependency(ets2);
 		ets1.addDependency(ets3);
@@ -98,10 +98,10 @@ public class DependencyResolverTest {
 	public void testCycleDetection() throws StorageException, ObjectWithIdNotFoundException, CyclicDependencyException {
 		final DependencyGraph<ExecutableTestSuiteDto> dependencyResolver = new DependencyGraph();
 
-		final ExecutableTestSuiteDto ets1 = CoreTestUtils.createEts(1);
-		final ExecutableTestSuiteDto ets2 = CoreTestUtils.createEts(2);
-		final ExecutableTestSuiteDto ets3 = CoreTestUtils.createEts(3);
-		final ExecutableTestSuiteDto ets4 = CoreTestUtils.createEts(4);
+		final ExecutableTestSuiteDto ets1 = TestUtils.createEts(1);
+		final ExecutableTestSuiteDto ets2 = TestUtils.createEts(2);
+		final ExecutableTestSuiteDto ets3 = TestUtils.createEts(3);
+		final ExecutableTestSuiteDto ets4 = TestUtils.createEts(4);
 
 		// Cycle
 		ets1.addDependency(ets2);
@@ -126,13 +126,13 @@ public class DependencyResolverTest {
 	public void testIgnoreCycles() throws StorageException, ObjectWithIdNotFoundException, CyclicDependencyException {
 		final DependencyGraph<ExecutableTestSuiteDto> dependencyResolver = new DependencyGraph();
 
-		final ExecutableTestSuiteDto ets1 = CoreTestUtils.createEts(1);
-		final ExecutableTestSuiteDto ets2 = CoreTestUtils.createEts(2);
-		final ExecutableTestSuiteDto ets3 = CoreTestUtils.createEts(3);
-		final ExecutableTestSuiteDto ets4 = CoreTestUtils.createEts(4);
-		final ExecutableTestSuiteDto ets5 = CoreTestUtils.createEts(5);
-		final ExecutableTestSuiteDto ets6 = CoreTestUtils.createEts(6);
-		final ExecutableTestSuiteDto ets7 = CoreTestUtils.createEts(7);
+		final ExecutableTestSuiteDto ets1 = TestUtils.createEts(1);
+		final ExecutableTestSuiteDto ets2 = TestUtils.createEts(2);
+		final ExecutableTestSuiteDto ets3 = TestUtils.createEts(3);
+		final ExecutableTestSuiteDto ets4 = TestUtils.createEts(4);
+		final ExecutableTestSuiteDto ets5 = TestUtils.createEts(5);
+		final ExecutableTestSuiteDto ets6 = TestUtils.createEts(6);
+		final ExecutableTestSuiteDto ets7 = TestUtils.createEts(7);
 
 		// Cycle
 		ets1.addDependency(ets2);

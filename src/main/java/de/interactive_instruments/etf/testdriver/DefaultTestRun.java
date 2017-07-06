@@ -129,7 +129,7 @@ final class DefaultTestRun implements TestRun {
 	public void setFuture(final Future<TestRunDto> future) throws IllegalStateException {
 		if (this.future != null) {
 			throw new IllegalStateException(
-					"The already set call back object can not be changed!");
+					"Attempt to override the call-back object");
 		}
 		this.future = future;
 	}

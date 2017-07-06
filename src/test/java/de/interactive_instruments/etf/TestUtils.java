@@ -18,6 +18,7 @@ package de.interactive_instruments.etf;
 import java.net.URI;
 import java.util.Date;
 
+import de.interactive_instruments.SUtils;
 import de.interactive_instruments.etf.dal.dto.Dto;
 import de.interactive_instruments.etf.dal.dto.MetaDataItemDto;
 import de.interactive_instruments.etf.dal.dto.RepositoryItemDto;
@@ -30,9 +31,9 @@ import de.interactive_instruments.etf.model.EidFactory;
 /**
  * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
-class CoreTestUtils {
+class TestUtils {
 
-	private CoreTestUtils() {}
+	private TestUtils() {}
 
 	static final ComponentDto COMP_DTO_1;
 
@@ -66,7 +67,7 @@ class CoreTestUtils {
 			rDto.setLocalPath("/");
 			rDto.setCreationDate(new Date(0));
 			rDto.setVersionFromStr("1.0.0");
-			rDto.setItemHash(name.getBytes());
+			rDto.setItemHash(SUtils.fastCalcHashAsHexStr(name));
 		}
 		if (dto instanceof ResultModelItemDto) {
 			final ResultModelItemDto rDto = ((ResultModelItemDto) dto);

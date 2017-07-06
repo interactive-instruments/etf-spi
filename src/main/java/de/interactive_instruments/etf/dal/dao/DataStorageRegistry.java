@@ -15,7 +15,7 @@
  */
 package de.interactive_instruments.etf.dal.dao;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public final class DataStorageRegistry {
 
-	final Map<String, DataStorage> dataStorages = new HashMap<>();
+	final Map<String, DataStorage> dataStorages = new LinkedHashMap<>();
 
 	private DataStorageRegistry() {}
 
