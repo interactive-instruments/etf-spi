@@ -35,8 +35,8 @@ dependencies {
 
     testCompile group: 'org.slf4j', name: 'slf4j-api', version: etf_slf4jApiVersion
     testCompile group: 'junit', name: 'junit', version: etf_junitTestVersion
-    testCompile group: 'de.interactive_instruments.etf.test', name: 'etf-unittest', version:'1.0.0'+project.snapshotSuffix
     testCompile group: 'de.interactive_instruments', name: 'ii-commons-util', version:'2.0.0'+project.snapshotSuffix
+    testCompile group: 'de.interactive_instruments.etf.test', name: 'etf-unittest', version:'1.0.0'+project.snapshotSuffix
 }
 
 javadoc {
