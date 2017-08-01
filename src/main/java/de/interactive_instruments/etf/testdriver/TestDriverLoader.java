@@ -16,13 +16,15 @@
 package de.interactive_instruments.etf.testdriver;
 
 import java.io.File;
-import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import de.interactive_instruments.io.MultiFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,10 +53,9 @@ final class TestDriverLoader implements Releasable {
 	private long testDriverLasModified = 0;
 	private ExecutableTestSuiteLifeCycleListenerMediator mediator;
 
-	private static class TestDriverJarFileFilter implements FilenameFilter {
-		@Override
-		public boolean accept(final File dir, String name) {
-			return name.endsWith("jar");
+	private static class TestDriverJarFileFilter implements MultiFileFilter {
+		@Override public boolean accept(final File pathname) {
+			return pathname.getName().endsWith("jar");
 		}
 	}
 
@@ -70,15 +71,19 @@ final class TestDriverLoader implements Releasable {
 	}
 
 	private void recreateTestComponents() throws ComponentLoadingException {
-		final File[] testDriverJars = testDriverDir.listFiles(new TestDriverJarFileFilter());
-		if (testDriverJars.length > 0) {
-			for (final File testDriverJar : testDriverJars) {
-				if (isTestComponentPrepared(testDriverJar)) {
-					continue;
-				}
-				final ComponentContainer testDriverContainer = new ComponentContainer(testDriverJar);
-				this.driverContainer.put(testDriverContainer.getId(), testDriverContainer);
+		final List<IFile> latestTestDriverJars;
+		try {
+			// Get latest versions
+			latestTestDriverJars = testDriverDir.getVersionedFilesInDir(new TestDriverJarFileFilter()).latest();
+		} catch (IOException e) {
+			throw new ComponentLoadingException("Failed to load components: "+e.getMessage());
+		}
+		for (final File testDriverJar : latestTestDriverJars) {
+			if (isTestComponentPrepared(testDriverJar)) {
+				continue;
 			}
+			final ComponentContainer testDriverContainer = new ComponentContainer(testDriverJar);
+			this.driverContainer.put(testDriverContainer.getId(), testDriverContainer);
 		}
 		testDriverLasModified = testDriverDir.lastModified();
 	}
