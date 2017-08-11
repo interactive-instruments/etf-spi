@@ -133,7 +133,7 @@ public final class TypeBuildingFileVisitor implements FileVisitor<Path> {
 
 	@Override
 	public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-		if (file.toString().endsWith(".jar") || file.toString().endsWith(".zip")) {
+		if (file.toString().endsWith(".zip")) {
 			// extract zip and terminate this run
 			final IFile zip = new IFile(file.toString());
 			final IFile extDir = new IFile(new IFile(file.toString()).getFilenameWithoutExt());

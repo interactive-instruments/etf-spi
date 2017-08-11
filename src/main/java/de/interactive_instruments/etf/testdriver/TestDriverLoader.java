@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import de.interactive_instruments.io.MultiFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +33,7 @@ import de.interactive_instruments.etf.component.ComponentInfo;
 import de.interactive_instruments.etf.component.ComponentLoadingException;
 import de.interactive_instruments.etf.component.ComponentNotLoadedException;
 import de.interactive_instruments.exceptions.config.ConfigurationException;
+import de.interactive_instruments.io.MultiFileFilter;
 import de.interactive_instruments.properties.Properties;
 import de.interactive_instruments.properties.PropertyHolder;
 
@@ -54,7 +54,8 @@ final class TestDriverLoader implements Releasable {
 	private ExecutableTestSuiteLifeCycleListenerMediator mediator;
 
 	private static class TestDriverJarFileFilter implements MultiFileFilter {
-		@Override public boolean accept(final File pathname) {
+		@Override
+		public boolean accept(final File pathname) {
 			return pathname.getName().endsWith("jar");
 		}
 	}
@@ -76,7 +77,7 @@ final class TestDriverLoader implements Releasable {
 			// Get latest versions
 			latestTestDriverJars = testDriverDir.getVersionedFilesInDir(new TestDriverJarFileFilter()).latest();
 		} catch (IOException e) {
-			throw new ComponentLoadingException("Failed to load components: "+e.getMessage());
+			throw new ComponentLoadingException("Failed to load components: " + e.getMessage());
 		}
 		for (final File testDriverJar : latestTestDriverJars) {
 			if (isTestComponentPrepared(testDriverJar)) {
