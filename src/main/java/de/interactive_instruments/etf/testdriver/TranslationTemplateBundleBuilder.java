@@ -29,10 +29,12 @@ import javax.xml.xpath.XPathExpressionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.interactive_instruments.SUtils;
 import de.interactive_instruments.etf.XmlUtils;
 import de.interactive_instruments.etf.dal.dao.Dao;
 import de.interactive_instruments.etf.dal.dao.StreamWriteDao;
 import de.interactive_instruments.etf.dal.dto.translation.TranslationTemplateBundleDto;
+import de.interactive_instruments.exceptions.ExcUtils;
 
 /**
  * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
@@ -60,6 +62,12 @@ public final class TranslationTemplateBundleBuilder
 			super(path);
 			this.writeDao = writeDao;
 			this.id = XmlUtils.eval("/etf:TranslationTemplateBundle[1]/@id", path.toFile());
+			try {
+				dependsOn(XmlUtils.eval(
+						"/etf:TranslationTemplateBundle[1]/etf:parent/@ref", path.toFile()));
+			} catch (final IOException ignoreNotFound) {
+				ExcUtils.suppress(ignoreNotFound);
+			}
 		}
 
 		@Override
