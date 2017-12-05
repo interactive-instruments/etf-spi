@@ -23,15 +23,13 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.interactive_instruments.CLUtils;
-import de.interactive_instruments.IFile;
-import de.interactive_instruments.JarUtils;
-import de.interactive_instruments.Releasable;
+import de.interactive_instruments.*;
 import de.interactive_instruments.etf.component.ComponentInfo;
 import de.interactive_instruments.etf.component.ComponentLoadingException;
 import de.interactive_instruments.exceptions.ExcUtils;
@@ -54,23 +52,26 @@ final class ComponentContainer implements Releasable {
 	private Class testDriverInitializerClass;
 	private ComponentClassLoader cl;
 	private Logger logger = LoggerFactory.getLogger(ComponentContainer.class);
-	private List<String> disallowedJars = new ArrayList<String>() {
-		{
-			// Disallow Xerces
-			add("xerces");
-			add("xercesImpl");
-			add("xml-apis");
-			// Disallow logging frameworks
-			add("slf4j-api");
-			add("slf4j-nop");
-			add("slf4j-log4j");
-			add("logback-classic");
-			add("logback-core");
-			// Disallow etf-core and etf-spi
-			add("etf-core");
-			add("etf-spi");
-		}
-	};
+	private static List<String> disallowedJars = Collections.unmodifiableList(
+			// List of libraries that are not loaded from the packaged
+			// lib folders but rather loaded from the highest layer once
+			new ArrayList<String>() {
+				{
+					// Disallow Xerces
+					add("xerces");
+					add("xercesImpl");
+					add("xml-apis");
+					// Disallow logging frameworks
+					add("slf4j-api");
+					add("slf4j-nop");
+					add("slf4j-log4j");
+					add("logback-classic");
+					add("logback-core");
+					// Disallow etf-core and etf-spi
+					add("etf-core");
+					add("etf-spi");
+				}
+			});
 
 	ComponentContainer(final File componentJar) throws ComponentLoadingException {
 		this.componentJar = componentJar;
@@ -167,7 +168,7 @@ final class ComponentContainer implements Releasable {
 		}
 		clasz = null;
 		testDriverInitializerClass = null;
-		IFile.closeQuietly(cl);
+		IoUtils.closeQuietly(cl);
 		cl = null;
 	}
 }
