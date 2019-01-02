@@ -10,3 +10,4 @@ outputFileStates.bin
 *.licensed
 /dependencies.txt
 /out
+/build-dependencies.txt
