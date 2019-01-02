@@ -19,6 +19,19 @@
  */
 package de.interactive_instruments.etf.testdriver;
 
+import static de.interactive_instruments.etf.test.TestDtos.TR_DTO_1;
+import static de.interactive_instruments.etf.test.TestDtos.TTR_DTO_1;
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.concurrent.ExecutionException;
+
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runners.MethodSorters;
+
 import de.interactive_instruments.IFile;
 import de.interactive_instruments.etf.dal.dao.DataStorageRegistry;
 import de.interactive_instruments.etf.dal.dao.StreamWriteDao;
@@ -29,18 +42,6 @@ import de.interactive_instruments.etf.test.DataStorageTestUtils;
 import de.interactive_instruments.exceptions.InitializationException;
 import de.interactive_instruments.exceptions.InvalidStateTransitionException;
 import de.interactive_instruments.exceptions.config.ConfigurationException;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.concurrent.ExecutionException;
-
-import static de.interactive_instruments.etf.test.TestDtos.TR_DTO_1;
-import static de.interactive_instruments.etf.test.TestDtos.TTR_DTO_1;
-import static org.junit.Assert.*;
 
 /**
  * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
@@ -52,8 +53,9 @@ public class TestRunTaskTest {
 
 	@BeforeClass
 	public static void setUp()
-			throws InvalidStateTransitionException, InitializationException, ConfigurationException, IOException { ;
-		if(DataStorageRegistry.instance().get("default")==null) {
+			throws InvalidStateTransitionException, InitializationException, ConfigurationException, IOException {
+		;
+		if (DataStorageRegistry.instance().get("default") == null) {
 			DataStorageRegistry.instance().register(
 					DataStorageTestUtils.inMemoryStorage());
 		}

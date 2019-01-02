@@ -50,7 +50,7 @@ public final class DataStorageRegistry {
 	}
 
 	public DataStorage get(final String name) {
-		if(dataStorages.isEmpty()) {
+		if (dataStorages.isEmpty()) {
 			return null;
 		}
 		if ("default".equals(name)) {
