@@ -8,3 +8,5 @@ hs_err_pid*
 build
 outputFileStates.bin
 *.licensed
+/dependencies.txt
+/out

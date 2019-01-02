@@ -7,14 +7,15 @@
 buildscript {
     repositories {
         maven {
-            url "http://services.interactive-instruments.de/etfdev-af/plugins-releases-local"
+            url "https://services.interactive-instruments.de/etfdev-af/plugins-releases-local"
             credentials {
+                // Our repository requires authenticating
                 username 'ii-bda'
-                password '6ozhS683'
+                password 'AP7mb4WA6F1ckdZkaE8Qx8GSowt'
             }}
     }
     dependencies {
-        classpath group: 'de.interactive_instruments.bda', name: 'etf-bda', version:'1.0.25'
+        classpath group: 'de.interactive_instruments.bda', name: 'etf-bda', version: '[1.0.29,1.0.99]'
     }
     dependencies {
         ant.unjar src: configurations.classpath.files.find {it.path.contains('etf')}, dest: 'build/gradle'
@@ -28,15 +29,15 @@ group = 'de.interactive_instruments.etf'
 description = 'ETF Service provider interface'
 
 dependencies {
-    compileOnly group: 'de.interactive_instruments', name: 'ii-commons-util', version:'2.0.0'+project.snapshotSuffix
-    compileOnly group: 'de.interactive_instruments.etf', name: 'etf-core', version:'1.0.0'+project.snapshotSuffix
+    compileOnly group: 'de.interactive_instruments', name: 'ii-commons-util', version:'3.0.0'+project.snapshotSuffix
+    compileOnly group: 'de.interactive_instruments.etf', name: 'etf-core', version:'1.1.0'+project.snapshotSuffix
 
     compileOnly group: 'commons-collections', name: 'commons-collections', version: etf_commonsCollectionsVersion
 
     testCompile group: 'org.slf4j', name: 'slf4j-api', version: etf_slf4jApiVersion
     testCompile group: 'junit', name: 'junit', version: etf_junitTestVersion
-    testCompile group: 'de.interactive_instruments', name: 'ii-commons-util', version:'2.0.0'+project.snapshotSuffix
-    testCompile group: 'de.interactive_instruments.etf.test', name: 'etf-unittest', version:'1.0.0'+project.snapshotSuffix
+    testCompile group: 'de.interactive_instruments', name: 'ii-commons-util', version:'3.0.0'+project.snapshotSuffix
+    testCompile group: 'de.interactive_instruments.etf.test', name: 'etf-unittest', version:'1.1.1'+project.snapshotSuffix
 }
 
 javadoc {
@@ -55,5 +56,5 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 
 artifacts {
     archives sourcesJar
-    archives javadocJar
+    // archives javadocJar
 }

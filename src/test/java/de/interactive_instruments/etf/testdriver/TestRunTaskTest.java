@@ -1,5 +1,5 @@
 /**
- * Copyright 2017 European Union, interactive instruments GmbH
+ * Copyright 2017-2019 European Union, interactive instruments GmbH
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by
  * the European Commission - subsequent versions of the EUPL (the "Licence");
  * You may not use this work except in compliance with the Licence.
@@ -21,9 +21,7 @@ package de.interactive_instruments.etf.testdriver;
 
 import static de.interactive_instruments.etf.test.TestDtos.TR_DTO_1;
 import static de.interactive_instruments.etf.test.TestDtos.TTR_DTO_1;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -35,10 +33,8 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import de.interactive_instruments.IFile;
-import de.interactive_instruments.ReflectionUtils;
 import de.interactive_instruments.etf.dal.dao.DataStorageRegistry;
 import de.interactive_instruments.etf.dal.dao.StreamWriteDao;
-import de.interactive_instruments.etf.dal.dao.WriteDao;
 import de.interactive_instruments.etf.dal.dto.result.TestTaskResultDto;
 import de.interactive_instruments.etf.dal.dto.run.TestRunDto;
 import de.interactive_instruments.etf.dal.dto.run.TestTaskDto;
@@ -58,7 +54,11 @@ public class TestRunTaskTest {
 	@BeforeClass
 	public static void setUp()
 			throws InvalidStateTransitionException, InitializationException, ConfigurationException, IOException {
-		DataStorageTestUtils.ensureInitialization();
+		;
+		if (DataStorageRegistry.instance().get("default") == null) {
+			DataStorageRegistry.instance().register(
+					DataStorageTestUtils.inMemoryStorage());
+		}
 	}
 
 	@Test
