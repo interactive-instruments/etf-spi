@@ -1,4 +1,4 @@
-#  ETF - Server Provider Interfaces for components
+#  ETF - Service Provider Interfaces for components
 
 [![European Union Public Licence 1.2](https://img.shields.io/badge/license-EUPL%201.2-blue.svg)](https://joinup.ec.europa.eu/software/page/eupl)
 
