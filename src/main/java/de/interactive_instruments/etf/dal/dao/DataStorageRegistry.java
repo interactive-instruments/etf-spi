@@ -27,41 +27,41 @@ import java.util.Map;
  */
 public final class DataStorageRegistry {
 
-	final Map<String, DataStorage> dataStorages = new LinkedHashMap<>();
+    final Map<String, DataStorage> dataStorages = new LinkedHashMap<>();
 
-	private DataStorageRegistry() {}
+    private DataStorageRegistry() {}
 
-	public void unregisterAndRelease(final String name) {
-		final DataStorage dataStorage = dataStorages.remove(name);
-		if (dataStorage == null) {
-			throw new IllegalArgumentException("Data Storage not found");
-		}
-		dataStorage.release();
-	}
+    public void unregisterAndRelease(final String name) {
+        final DataStorage dataStorage = dataStorages.remove(name);
+        if (dataStorage == null) {
+            throw new IllegalArgumentException("Data Storage not found");
+        }
+        dataStorage.release();
+    }
 
-	public void register(final DataStorage dataStorage) {
-		if (dataStorage == null) {
-			throw new NullPointerException("Data Storage not provided");
-		}
-		if (!dataStorage.isInitialized()) {
-			throw new NullPointerException("Data Storage not initialized");
-		}
-		dataStorages.putIfAbsent(dataStorage.getClass().getName(), dataStorage);
-	}
+    public void register(final DataStorage dataStorage) {
+        if (dataStorage == null) {
+            throw new NullPointerException("Data Storage not provided");
+        }
+        if (!dataStorage.isInitialized()) {
+            throw new NullPointerException("Data Storage not initialized");
+        }
+        dataStorages.putIfAbsent(dataStorage.getClass().getName(), dataStorage);
+    }
 
-	public DataStorage get(final String name) {
-		if (dataStorages.isEmpty()) {
-			return null;
-		}
-		if ("default".equals(name)) {
-			return dataStorages.values().iterator().next();
-		}
-		return dataStorages.get(name);
-	}
+    public DataStorage get(final String name) {
+        if (dataStorages.isEmpty()) {
+            return null;
+        }
+        if ("default".equals(name)) {
+            return dataStorages.values().iterator().next();
+        }
+        return dataStorages.get(name);
+    }
 
-	static final DataStorageRegistry INSTANCE = new DataStorageRegistry();
+    static final DataStorageRegistry INSTANCE = new DataStorageRegistry();
 
-	public static DataStorageRegistry instance() {
-		return DataStorageRegistry.INSTANCE;
-	}
+    public static DataStorageRegistry instance() {
+        return DataStorageRegistry.INSTANCE;
+    }
 }

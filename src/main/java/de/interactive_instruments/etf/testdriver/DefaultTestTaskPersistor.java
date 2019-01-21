@@ -32,57 +32,57 @@ import de.interactive_instruments.exceptions.StorageException;
  */
 public class DefaultTestTaskPersistor implements TestTaskResultPersistor, TestTaskEndListener {
 
-	private final TestTaskDto testTaskDto;
-	private final TestResultCollector collector;
-	private final StreamWriteDao<TestTaskResultDto> writeDao;
-	private boolean persisted = false;
+    private final TestTaskDto testTaskDto;
+    private final TestResultCollector collector;
+    private final StreamWriteDao<TestTaskResultDto> writeDao;
+    private boolean persisted = false;
 
-	public DefaultTestTaskPersistor(
-			final TestTaskDto testTaskDto,
-			final TestResultCollector collector,
-			final StreamWriteDao<TestTaskResultDto> writeDao) {
-		this.testTaskDto = Objects.requireNonNull(testTaskDto, "Test Task is null");
-		this.writeDao = Objects.requireNonNull(writeDao, "DAO is null");
-		this.collector = Objects.requireNonNull(collector, "Collector is null");
-		this.collector.registerTestTaskEndListener(this);
-	}
+    public DefaultTestTaskPersistor(
+            final TestTaskDto testTaskDto,
+            final TestResultCollector collector,
+            final StreamWriteDao<TestTaskResultDto> writeDao) {
+        this.testTaskDto = Objects.requireNonNull(testTaskDto, "Test Task is null");
+        this.writeDao = Objects.requireNonNull(writeDao, "DAO is null");
+        this.collector = Objects.requireNonNull(collector, "Collector is null");
+        this.collector.registerTestTaskEndListener(this);
+    }
 
-	private void checkState() {
-		if (resultPersisted()) {
-			throw new IllegalStateException("Result already persisted");
-		}
-	}
+    private void checkState() {
+        if (resultPersisted()) {
+            throw new IllegalStateException("Result already persisted");
+        }
+    }
 
-	private void setResultInTask(final TestTaskResultDto testTaskResultDto) {
-		testTaskDto.setTestTaskResult(testTaskResultDto);
-		persisted = true;
-	}
+    private void setResultInTask(final TestTaskResultDto testTaskResultDto) {
+        testTaskDto.setTestTaskResult(testTaskResultDto);
+        persisted = true;
+    }
 
-	@Override
-	public TestResultCollector getResultCollector() {
-		return collector;
-	}
+    @Override
+    public TestResultCollector getResultCollector() {
+        return collector;
+    }
 
-	@Override
-	public void streamResult(final InputStream resultStream) throws StorageException {
-		checkState();
-		setResultInTask(writeDao.add(resultStream));
-	}
+    @Override
+    public void streamResult(final InputStream resultStream) throws StorageException {
+        checkState();
+        setResultInTask(writeDao.add(resultStream));
+    }
 
-	@Override
-	public void setResult(final TestTaskResultDto testTaskResultDto) throws StorageException {
-		checkState();
-		writeDao.add(testTaskResultDto);
-		setResultInTask(testTaskResultDto);
-	}
+    @Override
+    public void setResult(final TestTaskResultDto testTaskResultDto) throws StorageException {
+        checkState();
+        writeDao.add(testTaskResultDto);
+        setResultInTask(testTaskResultDto);
+    }
 
-	@Override
-	public boolean resultPersisted() {
-		return persisted;
-	}
+    @Override
+    public boolean resultPersisted() {
+        return persisted;
+    }
 
-	@Override
-	public void testTaskFinished(final TestTaskResultDto testTaskResultDto) {
-		setResultInTask(testTaskResultDto);
-	}
+    @Override
+    public void testTaskFinished(final TestTaskResultDto testTaskResultDto) {
+        setResultInTask(testTaskResultDto);
+    }
 }

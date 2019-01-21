@@ -17,17 +17,20 @@
  * European Public Administrations Programme (http://ec.europa.eu/isa)
  * through Action 1.17: A Reusable INSPIRE Reference Platform (ARE3NA).
  */
-package de.interactive_instruments.etf.testdriver;
+package de.interactive_instruments.etf.component.loaders;
 
-import de.interactive_instruments.etf.dal.dto.test.ExecutableTestSuiteDto;
+import de.interactive_instruments.etf.dal.dto.Dto;
 import de.interactive_instruments.etf.model.EID;
 
 /**
+ * Observer for item related file changes
+ *
  * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
-public interface EtsTypeLoader extends TypeLoader {
+public interface ItemFileLoaderResultListener<T extends Dto> {
+    void eventItemBuilt(final T dto);
 
-	ExecutableTestSuiteDto getExecutableTestSuiteById(final EID id);
+    void eventItemDestroyed(final EID id);
 
-	void setLifeCycleListener(final ExecutableTestSuiteLifeCycleListener mediator);
+    void eventItemUpdated(final T dto);
 }

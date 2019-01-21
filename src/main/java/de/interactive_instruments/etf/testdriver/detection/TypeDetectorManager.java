@@ -28,20 +28,19 @@ import de.interactive_instruments.etf.model.EidMap;
  */
 public class TypeDetectorManager {
 
-	private EidMap<TypeDetector> detectors = new DefaultEidMap();
+    private EidMap<TypeDetector> detectors = new DefaultEidMap();
 
-	void register(final TypeDetector detector) {
-		detectors.put(detector.getId(), detector);
-	}
+    void register(final TypeDetector detector) {
+        detectors.put(detector.getId(), detector);
+    }
 
-	/**
-	 * Detects and sets the Test Object Type. If the switch 'enrichTestObject' is set to
-	 * true, the detector might change additional properties, like the name or the description
-	 *
-	 * @param testObject
-	 * @param enrichTestObject
-	 */
-	void detectAndSetType(final TestObjectDto testObject, final boolean enrichTestObject) {
+    /**
+     * Detects and sets the Test Object Type. If the switch 'enrichTestObject' is set to true, the detector might change additional properties, like the name or the description
+     *
+     * @param testObject
+     * @param enrichTestObject
+     */
+    void detectAndSetType(final TestObjectDto testObject, final boolean enrichTestObject) {
 
-	}
+    }
 }

@@ -31,44 +31,44 @@ import de.interactive_instruments.exceptions.config.ConfigurationException;
  */
 public class UnitTestTestTask extends AbstractTestTask {
 
-	private final int failInStage;
+    private final int failInStage;
 
-	protected UnitTestTestTask(
-			final int failInStage,
-			final TestTaskDto testTaskDto) {
-		super(testTaskDto, new UnitTestTestTaskProgress(), UnitTestTestTask.class.getClassLoader());
-		this.failInStage = failInStage;
-	}
+    protected UnitTestTestTask(
+            final int failInStage,
+            final TestTaskDto testTaskDto) {
+        super(testTaskDto, new UnitTestTestTaskProgress(), UnitTestTestTask.class.getClassLoader());
+        this.failInStage = failInStage;
+    }
 
-	@Override
-	protected void doRun() throws Exception {
-		this.progress.advance();
-		if (failInStage > 1) {
-			throw new IllegalStateException("FAIL");
-		}
-		this.progress.advance();
-	}
+    @Override
+    protected void doRun() throws Exception {
+        this.progress.advance();
+        if (failInStage > 1) {
+            throw new IllegalStateException("FAIL");
+        }
+        this.progress.advance();
+    }
 
-	@Override
-	protected void doInit() throws ConfigurationException, InitializationException {
-		if (failInStage > 2) {
-			throw new InitializationException("FAIL");
-		}
-		testTaskDto.setTestTaskResult(TTR_DTO_1);
-	}
+    @Override
+    protected void doInit() throws ConfigurationException, InitializationException {
+        if (failInStage > 2) {
+            throw new InitializationException("FAIL");
+        }
+        testTaskDto.setTestTaskResult(TTR_DTO_1);
+    }
 
-	@Override
-	protected void doRelease() {
-		if (failInStage > 3) {
-			throw new IllegalStateException("FAIL");
-		}
+    @Override
+    protected void doRelease() {
+        if (failInStage > 3) {
+            throw new IllegalStateException("FAIL");
+        }
 
-	}
+    }
 
-	@Override
-	protected void doCancel() throws InvalidStateTransitionException {
-		if (failInStage > 4) {
-			throw new InvalidStateTransitionException("FAIL");
-		}
-	}
+    @Override
+    protected void doCancel() throws InvalidStateTransitionException {
+        if (failInStage > 4) {
+            throw new InvalidStateTransitionException("FAIL");
+        }
+    }
 }

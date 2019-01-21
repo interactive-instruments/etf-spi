@@ -26,26 +26,26 @@ package de.interactive_instruments.etf.model;
  */
 public abstract class AbstractOutputFormat implements OutputFormat {
 
-	private final String label;
-	private final EID id;
+    private final String label;
+    private final EID id;
 
-	protected AbstractOutputFormat(final String label) {
-		this.label = label;
-		this.id = EidFactory.getDefault().createUUID(label);
-	}
+    protected AbstractOutputFormat(final String label) {
+        this.label = label;
+        this.id = EidFactory.getDefault().createUUID(label);
+    }
 
-	@Override
-	public EID getId() {
-		return id;
-	}
+    @Override
+    public EID getId() {
+        return id;
+    }
 
-	@Override
-	public String getLabel() {
-		return label;
-	}
+    @Override
+    public String getLabel() {
+        return label;
+    }
 
-	@Override
-	public int compareTo(final OutputFormat o) {
-		return getId().compareTo(o.getId());
-	}
+    @Override
+    public int compareTo(final OutputFormat o) {
+        return getId().compareTo(o.getId());
+    }
 }

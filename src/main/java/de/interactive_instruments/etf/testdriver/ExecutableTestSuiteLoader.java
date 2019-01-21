@@ -21,19 +21,29 @@ package de.interactive_instruments.etf.testdriver;
 
 import de.interactive_instruments.Configurable;
 import de.interactive_instruments.Releasable;
-import de.interactive_instruments.etf.dal.dto.Dto;
+import de.interactive_instruments.etf.component.loaders.LoadingContext;
+import de.interactive_instruments.etf.dal.dto.test.ExecutableTestSuiteDto;
 import de.interactive_instruments.etf.model.EidSet;
 
 /**
+ * Interface for loading Executable Test Suites
+ *
  * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
-public interface TypeLoader extends Configurable, Releasable {
+public interface ExecutableTestSuiteLoader extends Configurable, Releasable {
 
-	/**
-	 * Return all DTOs the TypeLoader could create after
-	 * {@link #init()} has been called.
-	 *
-	 * @return set of created Dtos
-	 */
-	EidSet<? extends Dto> getTypes();
+    /**
+     * Return all ExecutableTestSuites this loader could create after {@link #init()} has been called.
+     *
+     * @return set of created Dtos
+     */
+    EidSet<ExecutableTestSuiteDto> getExecutableTestSuites();
+
+    /**
+     * Injected to parse files and resolve dependencies
+     *
+     * @param loadingContext
+     *            LoadingContext
+     */
+    void setLoadingContext(final LoadingContext loadingContext);
 }

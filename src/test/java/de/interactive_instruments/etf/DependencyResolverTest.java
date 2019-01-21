@@ -41,130 +41,130 @@ import de.interactive_instruments.exceptions.StorageException;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DependencyResolverTest {
 
-	@Test
-	public void testDependencyResolving() throws StorageException, ObjectWithIdNotFoundException, CyclicDependencyException {
+    @Test
+    public void testDependencyResolving() throws StorageException, ObjectWithIdNotFoundException, CyclicDependencyException {
 
-		final DependencyGraph<ExecutableTestSuiteDto> dependencyResolver = new DependencyGraph();
+        final DependencyGraph<ExecutableTestSuiteDto> dependencyResolver = new DependencyGraph();
 
-		final ExecutableTestSuiteDto ets1 = TestUtils.createEts(1);
-		final ExecutableTestSuiteDto ets2 = TestUtils.createEts(2);
-		final ExecutableTestSuiteDto ets3 = TestUtils.createEts(3);
-		final ExecutableTestSuiteDto ets4 = TestUtils.createEts(4);
-		final ExecutableTestSuiteDto ets5 = TestUtils.createEts(5);
-		final ExecutableTestSuiteDto ets6 = TestUtils.createEts(6);
-		final ExecutableTestSuiteDto ets7 = TestUtils.createEts(7);
+        final ExecutableTestSuiteDto ets1 = TestUtils.createEts(1);
+        final ExecutableTestSuiteDto ets2 = TestUtils.createEts(2);
+        final ExecutableTestSuiteDto ets3 = TestUtils.createEts(3);
+        final ExecutableTestSuiteDto ets4 = TestUtils.createEts(4);
+        final ExecutableTestSuiteDto ets5 = TestUtils.createEts(5);
+        final ExecutableTestSuiteDto ets6 = TestUtils.createEts(6);
+        final ExecutableTestSuiteDto ets7 = TestUtils.createEts(7);
 
-		ets1.addDependency(ets2);
-		ets1.addDependency(ets3);
-		ets1.addDependency(ets6);
+        ets1.addDependency(ets2);
+        ets1.addDependency(ets3);
+        ets1.addDependency(ets6);
 
-		ets2.addDependency(ets4);
-		ets2.addDependency(ets3);
+        ets2.addDependency(ets4);
+        ets2.addDependency(ets3);
 
-		ets3.addDependency(ets4);
-		ets3.addDependency(ets5);
+        ets3.addDependency(ets4);
+        ets3.addDependency(ets5);
 
-		ets4.addDependency(ets6);
+        ets4.addDependency(ets6);
 
-		ets5.addDependency(ets7);
+        ets5.addDependency(ets7);
 
-		ets6.addDependency(ets7);
+        ets6.addDependency(ets7);
 
-		final ArrayList<ExecutableTestSuiteDto> executableTestSuiteDtos = new ArrayList<ExecutableTestSuiteDto>() {
-			{
-				add(ets1);
-				add(ets2);
-				add(ets3);
-				add(ets4);
-				add(ets5);
-				add(ets6);
-				add(ets7);
-			}
-		};
+        final ArrayList<ExecutableTestSuiteDto> executableTestSuiteDtos = new ArrayList<ExecutableTestSuiteDto>() {
+            {
+                add(ets1);
+                add(ets2);
+                add(ets3);
+                add(ets4);
+                add(ets5);
+                add(ets6);
+                add(ets7);
+            }
+        };
 
-		dependencyResolver.addAllDependencies(executableTestSuiteDtos);
-		final List<ExecutableTestSuiteDto> sorted = dependencyResolver.sort();
+        dependencyResolver.addAllDependencies(executableTestSuiteDtos);
+        final List<ExecutableTestSuiteDto> sorted = dependencyResolver.sort();
 
-		assertNotNull(sorted);
-		assertEquals(7, sorted.size());
+        assertNotNull(sorted);
+        assertEquals(7, sorted.size());
 
-		Assert.assertEquals("ETS.7", sorted.get(6).getLabel());
-		Assert.assertEquals("ETS.5", sorted.get(5).getLabel());
-		Assert.assertEquals("ETS.6", sorted.get(4).getLabel());
-		Assert.assertEquals("ETS.4", sorted.get(3).getLabel());
-		Assert.assertEquals("ETS.3", sorted.get(2).getLabel());
-		Assert.assertEquals("ETS.2", sorted.get(1).getLabel());
-		Assert.assertEquals("ETS.1", sorted.get(0).getLabel());
+        Assert.assertEquals("ETS.7", sorted.get(6).getLabel());
+        Assert.assertEquals("ETS.5", sorted.get(5).getLabel());
+        Assert.assertEquals("ETS.6", sorted.get(4).getLabel());
+        Assert.assertEquals("ETS.4", sorted.get(3).getLabel());
+        Assert.assertEquals("ETS.3", sorted.get(2).getLabel());
+        Assert.assertEquals("ETS.2", sorted.get(1).getLabel());
+        Assert.assertEquals("ETS.1", sorted.get(0).getLabel());
 
-	}
+    }
 
-	@Test(expected = CyclicDependencyException.class)
-	public void testCycleDetection() throws StorageException, ObjectWithIdNotFoundException, CyclicDependencyException {
-		final DependencyGraph<ExecutableTestSuiteDto> dependencyResolver = new DependencyGraph();
+    @Test(expected = CyclicDependencyException.class)
+    public void testCycleDetection() throws StorageException, ObjectWithIdNotFoundException, CyclicDependencyException {
+        final DependencyGraph<ExecutableTestSuiteDto> dependencyResolver = new DependencyGraph();
 
-		final ExecutableTestSuiteDto ets1 = TestUtils.createEts(1);
-		final ExecutableTestSuiteDto ets2 = TestUtils.createEts(2);
-		final ExecutableTestSuiteDto ets3 = TestUtils.createEts(3);
-		final ExecutableTestSuiteDto ets4 = TestUtils.createEts(4);
+        final ExecutableTestSuiteDto ets1 = TestUtils.createEts(1);
+        final ExecutableTestSuiteDto ets2 = TestUtils.createEts(2);
+        final ExecutableTestSuiteDto ets3 = TestUtils.createEts(3);
+        final ExecutableTestSuiteDto ets4 = TestUtils.createEts(4);
 
-		// Cycle
-		ets1.addDependency(ets2);
-		ets2.addDependency(ets3);
-		ets3.addDependency(ets4);
-		ets4.addDependency(ets1);
+        // Cycle
+        ets1.addDependency(ets2);
+        ets2.addDependency(ets3);
+        ets3.addDependency(ets4);
+        ets4.addDependency(ets1);
 
-		final ArrayList<ExecutableTestSuiteDto> executableTestSuiteDtos = new ArrayList<ExecutableTestSuiteDto>() {
-			{
-				add(ets1);
-				add(ets2);
-				add(ets3);
-				add(ets4);
-			}
-		};
+        final ArrayList<ExecutableTestSuiteDto> executableTestSuiteDtos = new ArrayList<ExecutableTestSuiteDto>() {
+            {
+                add(ets1);
+                add(ets2);
+                add(ets3);
+                add(ets4);
+            }
+        };
 
-		dependencyResolver.addAllDependencies(executableTestSuiteDtos);
-		dependencyResolver.sort();
-	}
+        dependencyResolver.addAllDependencies(executableTestSuiteDtos);
+        dependencyResolver.sort();
+    }
 
-	@Test
-	public void testIgnoreCycles() throws StorageException, ObjectWithIdNotFoundException, CyclicDependencyException {
-		final DependencyGraph<ExecutableTestSuiteDto> dependencyResolver = new DependencyGraph();
+    @Test
+    public void testIgnoreCycles() throws StorageException, ObjectWithIdNotFoundException, CyclicDependencyException {
+        final DependencyGraph<ExecutableTestSuiteDto> dependencyResolver = new DependencyGraph();
 
-		final ExecutableTestSuiteDto ets1 = TestUtils.createEts(1);
-		final ExecutableTestSuiteDto ets2 = TestUtils.createEts(2);
-		final ExecutableTestSuiteDto ets3 = TestUtils.createEts(3);
-		final ExecutableTestSuiteDto ets4 = TestUtils.createEts(4);
-		final ExecutableTestSuiteDto ets5 = TestUtils.createEts(5);
-		final ExecutableTestSuiteDto ets6 = TestUtils.createEts(6);
-		final ExecutableTestSuiteDto ets7 = TestUtils.createEts(7);
+        final ExecutableTestSuiteDto ets1 = TestUtils.createEts(1);
+        final ExecutableTestSuiteDto ets2 = TestUtils.createEts(2);
+        final ExecutableTestSuiteDto ets3 = TestUtils.createEts(3);
+        final ExecutableTestSuiteDto ets4 = TestUtils.createEts(4);
+        final ExecutableTestSuiteDto ets5 = TestUtils.createEts(5);
+        final ExecutableTestSuiteDto ets6 = TestUtils.createEts(6);
+        final ExecutableTestSuiteDto ets7 = TestUtils.createEts(7);
 
-		// Cycle
-		ets1.addDependency(ets2);
-		ets2.addDependency(ets3);
-		ets3.addDependency(ets4);
-		ets4.addDependency(ets1);
+        // Cycle
+        ets1.addDependency(ets2);
+        ets2.addDependency(ets3);
+        ets3.addDependency(ets4);
+        ets4.addDependency(ets1);
 
-		ets5.addDependency(ets6);
+        ets5.addDependency(ets6);
 
-		ets7.addDependency(ets1);
+        ets7.addDependency(ets1);
 
-		final ArrayList<ExecutableTestSuiteDto> executableTestSuiteDtos = new ArrayList<ExecutableTestSuiteDto>() {
-			{
-				add(ets1);
-				add(ets2);
-				add(ets3);
-				add(ets4);
+        final ArrayList<ExecutableTestSuiteDto> executableTestSuiteDtos = new ArrayList<ExecutableTestSuiteDto>() {
+            {
+                add(ets1);
+                add(ets2);
+                add(ets3);
+                add(ets4);
 
-				add(ets5);
-				add(ets6);
+                add(ets5);
+                add(ets6);
 
-				add(ets7);
-			}
-		};
+                add(ets7);
+            }
+        };
 
-		dependencyResolver.addAllDependencies(executableTestSuiteDtos);
-		final List<ExecutableTestSuiteDto> sortedList = dependencyResolver.sortIgnoreCylce();
-		System.out.println(sortedList);
+        dependencyResolver.addAllDependencies(executableTestSuiteDtos);
+        final List<ExecutableTestSuiteDto> sortedList = dependencyResolver.sortIgnoreCylce();
+        System.out.println(sortedList);
 
-	}
+    }
 }

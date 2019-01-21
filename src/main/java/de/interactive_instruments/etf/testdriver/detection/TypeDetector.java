@@ -31,33 +31,34 @@ import de.interactive_instruments.etf.model.EidHolder;
  */
 public interface TypeDetector extends EidHolder {
 
-	Collection<MediaType> supportedTypes();
+    Collection<MediaType> supportedTypes();
 
-	interface TypeDetectionCmd {
-		enum Status {
-			TYPE_KNOWN, NEED_MORE_DATA, TYPE_UNKNOWN,
-		}
+    interface TypeDetectionCmd {
+        enum Status {
+            TYPE_KNOWN, NEED_MORE_DATA, TYPE_UNKNOWN,
+        }
 
-		Status status();
+        Status status();
 
-		/**
-		 * Set the Test Object type for the Test Object
-		 *
-		 * @param dto Test Object Dto
-		 */
-		void setType(final TestObjectDto dto);
+        /**
+         * Set the Test Object type for the Test Object
+         *
+         * @param dto
+         *            Test Object Dto
+         */
+        void setType(final TestObjectDto dto);
 
-		/**
-		 * All Types a Detector can detect
-		 *
-		 * @return list of TestObjectTypeDto
-		 */
-		Collection<TestObjectTypeDto> getDetectibleTypes();
-	}
+        /**
+         * All Types a Detector can detect
+         *
+         * @return list of TestObjectTypeDto
+         */
+        Collection<TestObjectTypeDto> getDetectibleTypes();
+    }
 
-	boolean supportsDetectionByMimeType();
+    boolean supportsDetectionByMimeType();
 
-	boolean supportsDetectionByFileExtension();
+    boolean supportsDetectionByFileExtension();
 
-	boolean supportsDetectionByContent();
+    boolean supportsDetectionByContent();
 }

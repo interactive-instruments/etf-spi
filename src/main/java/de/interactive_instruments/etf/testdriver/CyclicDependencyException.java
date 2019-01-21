@@ -24,14 +24,14 @@ package de.interactive_instruments.etf.testdriver;
  */
 public class CyclicDependencyException extends Exception {
 
-	private final Object object;
+    private final Object object;
 
-	public CyclicDependencyException(final Object object) {
-		super("Dependency graph contains a cycle! Last step: " + object.toString());
-		this.object = object;
-	}
+    public CyclicDependencyException(final Object object) {
+        super("Dependency graph contains a cycle! Last step: " + object.toString());
+        this.object = object;
+    }
 
-	public Object getObject() {
-		return object;
-	}
+    public Object getObject() {
+        return object;
+    }
 }

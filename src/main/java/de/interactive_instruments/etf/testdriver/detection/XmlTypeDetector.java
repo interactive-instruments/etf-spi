@@ -27,7 +27,7 @@ import org.xml.sax.XMLReader;
  */
 public interface XmlTypeDetector extends TypeDetector {
 
-	interface XmlTypeDetectionCmd extends TypeDetectionCmd, ContentHandler {}
+    interface XmlTypeDetectionCmd extends TypeDetectionCmd, ContentHandler {}
 
-	XmlTypeDetectionCmd createCmd(final XMLReader xmlReader);
+    XmlTypeDetectionCmd createCmd(final XMLReader xmlReader);
 }

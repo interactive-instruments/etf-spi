@@ -27,70 +27,70 @@ import java.util.Date;
  */
 public class AbstractTestTaskProgress implements TaskProgress {
 
-	private STATE currentState = STATE.CREATED;
-	private STATE oldState = null;
-	protected Instant startInstant;
-	protected Instant stopInstant;
-	private long stepsCompleted = 0;
-	private long maxSteps = -1;
-	private TestRunLogReader logReader;
+    private STATE currentState = STATE.CREATED;
+    private STATE oldState = null;
+    protected Instant startInstant;
+    protected Instant stopInstant;
+    private long stepsCompleted = 0;
+    private long maxSteps = -1;
+    private TestRunLogReader logReader;
 
-	void setLogReader(TestRunLogReader logReader) {
-		this.logReader = logReader;
-	}
+    void setLogReader(TestRunLogReader logReader) {
+        this.logReader = logReader;
+    }
 
-	protected void initMaxSteps(final long maxSteps) {
-		if (this.maxSteps != -1) {
-			throw new IllegalArgumentException("Max steps already set");
-		}
-		if (maxSteps <= 0) {
-			throw new IllegalArgumentException("Invalid max value");
-		}
-		this.maxSteps = maxSteps;
-	}
+    protected void initMaxSteps(final long maxSteps) {
+        if (this.maxSteps != -1) {
+            throw new IllegalArgumentException("Max steps already set");
+        }
+        if (maxSteps <= 0) {
+            throw new IllegalArgumentException("Invalid max value");
+        }
+        this.maxSteps = maxSteps;
+    }
 
-	protected void advance() {
-		stepsCompleted++;
-		if (stepsCompleted >= maxSteps) {
-			maxSteps = stepsCompleted + 1;
-		}
-	}
+    protected void advance() {
+        stepsCompleted++;
+        if (stepsCompleted >= maxSteps) {
+            maxSteps = stepsCompleted + 1;
+        }
+    }
 
-	void setState(final STATE currentState) {
-		this.oldState = this.currentState;
-		this.currentState = currentState;
-	}
+    void setState(final STATE currentState) {
+        this.oldState = this.currentState;
+        this.currentState = currentState;
+    }
 
-	public STATE getCurrentState() {
-		return currentState;
-	}
+    public STATE getCurrentState() {
+        return currentState;
+    }
 
-	public STATE getOldState() {
-		return oldState;
-	}
+    public STATE getOldState() {
+        return oldState;
+    }
 
-	@Override
-	public long getMaxSteps() {
-		return maxSteps;
-	}
+    @Override
+    public long getMaxSteps() {
+        return maxSteps;
+    }
 
-	@Override
-	public long getCurrentStepsCompleted() {
-		return stepsCompleted;
-	}
+    @Override
+    public long getCurrentStepsCompleted() {
+        return stepsCompleted;
+    }
 
-	@Override
-	public Date getStartTimestamp() {
-		return Date.from(startInstant);
-	}
+    @Override
+    public Date getStartTimestamp() {
+        return Date.from(startInstant);
+    }
 
-	@Override
-	public TestRunLogReader getLogReader() {
-		return logReader;
-	}
+    @Override
+    public TestRunLogReader getLogReader() {
+        return logReader;
+    }
 
-	@Override
-	public TaskState.STATE getState() {
-		return this.currentState;
-	}
+    @Override
+    public TaskState.STATE getState() {
+        return this.currentState;
+    }
 }

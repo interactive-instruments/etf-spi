@@ -23,7 +23,7 @@ package de.interactive_instruments.etf.testdriver;
  * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 class UnitTestTestTaskProgress extends AbstractTestTaskProgress {
-	UnitTestTestTaskProgress() {
-		initMaxSteps(2);
-	}
+    UnitTestTestTaskProgress() {
+        initMaxSteps(2);
+    }
 }

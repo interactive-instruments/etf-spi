@@ -26,7 +26,7 @@ import de.interactive_instruments.exceptions.ObjectWithIdNotFoundException;
  */
 public class DependencyResolutionException extends ObjectWithIdNotFoundException {
 
-	public DependencyResolutionException(final String message) {
-		super(message, 1L);
-	}
+    public DependencyResolutionException(final String message) {
+        super(message, 1L);
+    }
 }

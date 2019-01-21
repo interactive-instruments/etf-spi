@@ -49,78 +49,78 @@ import de.interactive_instruments.exceptions.config.ConfigurationException;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestRunTaskTest {
 
-	private static DefaultTestRun testRun;
+    private static DefaultTestRun testRun;
 
-	@BeforeClass
-	public static void setUp()
-			throws InvalidStateTransitionException, InitializationException, ConfigurationException, IOException {
-		;
-		if (DataStorageRegistry.instance().get("default") == null) {
-			DataStorageRegistry.instance().register(
-					DataStorageTestUtils.inMemoryStorage());
-		}
-	}
+    @BeforeClass
+    public static void setUp()
+            throws InvalidStateTransitionException, InitializationException, ConfigurationException, IOException {
+        ;
+        if (DataStorageRegistry.instance().get("default") == null) {
+            DataStorageRegistry.instance().register(
+                    DataStorageTestUtils.inMemoryStorage());
+        }
+    }
 
-	@Test
-	public void test1_createTestTask() throws IOException {
-		final IFile testRunDir = IFile.createTempDir("etf-unittest");
-		final IFile testRunLogDir = testRunDir.expandPath("log");
-		testRunLogDir.mkdirs();
-		final TestRunLogger runLogger = new DefaultTestRunLogger(testRunLogDir, "default");
-		testRun = new DefaultTestRun(TR_DTO_1, runLogger, testRunDir);
-		final TestTaskDto testTaskDto = TR_DTO_1.getTestTasks().get(0);
-		final UnitTestTestTask testTask = new UnitTestTestTask(0, testTaskDto);
-		testRun.setTestTasks(Collections.singletonList(testTask));
-		testTask.setResulPersistor(
-				new DefaultTestTaskPersistor(testTaskDto,
-						TestResultCollectorFactory.getDefault().createTestResultCollector(runLogger, testTaskDto),
-						((StreamWriteDao<TestTaskResultDto>) (DataStorageRegistry.instance().get("default")
-								.getDao(TestTaskResultDto.class)))));
-	}
+    @Test
+    public void test1_createTestTask() throws IOException {
+        final IFile testRunDir = IFile.createTempDir("etf-unittest");
+        final IFile testRunLogDir = testRunDir.expandPath("log");
+        testRunLogDir.mkdirs();
+        final TestRunLogger runLogger = new DefaultTestRunLogger(testRunLogDir, "default");
+        testRun = new DefaultTestRun(TR_DTO_1, runLogger, testRunDir);
+        final TestTaskDto testTaskDto = TR_DTO_1.getTestTasks().get(0);
+        final UnitTestTestTask testTask = new UnitTestTestTask(0, testTaskDto);
+        testRun.setTestTasks(Collections.singletonList(testTask));
+        testTask.setResulPersistor(
+                new DefaultTestTaskPersistor(testTaskDto,
+                        TestResultCollectorFactory.getDefault().createTestResultCollector(runLogger, testTaskDto),
+                        ((StreamWriteDao<TestTaskResultDto>) (DataStorageRegistry.instance().get("default")
+                                .getDao(TestTaskResultDto.class)))));
+    }
 
-	@Test
-	public void test2_checkInitNotCalled() {
-		// submit task
-		final TaskPoolRegistry registry = new TaskPoolRegistry(1, 1);
-		registry.submitTask(testRun);
+    @Test
+    public void test2_checkInitNotCalled() {
+        // submit task
+        final TaskPoolRegistry registry = new TaskPoolRegistry(1, 1, 1);
+        registry.submitTask(testRun);
 
-		TestRunDto result = null;
-		boolean exceptionThrown = false;
-		try {
-			result = testRun.waitForResult();
-		} catch (ExecutionException | InterruptedException e) {
-			if (e.getCause() instanceof InvalidStateTransitionException) {
-				exceptionThrown = true;
-			}
-		}
-		assertTrue(exceptionThrown);
-	}
+        TestRunDto result = null;
+        boolean exceptionThrown = false;
+        try {
+            result = testRun.waitForResult();
+        } catch (ExecutionException | InterruptedException e) {
+            if (e.getCause() instanceof InvalidStateTransitionException) {
+                exceptionThrown = true;
+            }
+        }
+        assertTrue(exceptionThrown);
+    }
 
-	@Test(expected = IllegalStateException.class)
-	public void test3_checkStart() throws ConfigurationException, InvalidStateTransitionException, InitializationException {
-		// submit task
-		final TaskPoolRegistry registry = new TaskPoolRegistry(1, 1);
-		// Exception call back object already set
-		registry.submitTask(testRun);
-	}
+    @Test(expected = IllegalStateException.class)
+    public void test3_checkStart() throws ConfigurationException, InvalidStateTransitionException, InitializationException {
+        // submit task
+        final TaskPoolRegistry registry = new TaskPoolRegistry(1, 1, 1);
+        // Exception call back object already set
+        registry.submitTask(testRun);
+    }
 
-	@Test
-	public void test4_checkStart()
-			throws ConfigurationException, InvalidStateTransitionException, InitializationException, IOException {
-		test1_createTestTask();
+    @Test
+    public void test4_checkStart()
+            throws ConfigurationException, InvalidStateTransitionException, InitializationException, IOException {
+        test1_createTestTask();
 
-		// submit task
-		final TaskPoolRegistry registry = new TaskPoolRegistry(1, 1);
-		registry.submitTask(testRun);
-		testRun.init();
+        // submit task
+        final TaskPoolRegistry registry = new TaskPoolRegistry(1, 1, 1);
+        registry.submitTask(testRun);
+        testRun.init();
 
-		TestRunDto result = null;
-		try {
-			result = testRun.waitForResult();
-		} catch (ExecutionException | InterruptedException e) {
-			e.printStackTrace();
-		}
-		assertNotNull(result);
-		assertEquals(TTR_DTO_1.getId(), result.getTestTaskResults().get(0).getId());
-	}
+        TestRunDto result = null;
+        try {
+            result = testRun.waitForResult();
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        assertNotNull(result);
+        assertEquals(TTR_DTO_1.getId(), result.getTestTaskResults().get(0).getId());
+    }
 }

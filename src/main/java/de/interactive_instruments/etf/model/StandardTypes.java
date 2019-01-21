@@ -33,49 +33,49 @@ import de.interactive_instruments.etf.dal.dto.translation.TranslationTemplateDto
  */
 public class StandardTypes {
 
-	public static final EidMap<TestItemTypeDto> STANDARD_TEST_ITEM_TYPES = new DefaultEidMap<TestItemTypeDto>() {
-		{
-			{
-				final TestItemTypeDto testItemTypeDto = new TestItemTypeDto();
-				testItemTypeDto.setLabel("Manual Test Assertion");
-				testItemTypeDto.setId(EidFactory.getDefault().createAndPreserveStr("b48eeaa3-6a74-414a-879c-1dc708017e11"));
-				testItemTypeDto.setDescription("A Manual Test Assertion requires that a tester manually validates a result");
-				testItemTypeDto.setReference(
-						"https://github.com/interactive-instruments/etf-bsxtd/wiki/Test-Assertion-Types#test-assertion-type-2");
-				put(testItemTypeDto.getId(), testItemTypeDto);
-			}
-			{
-				final TestItemTypeDto testItemTypeDto = new TestItemTypeDto();
-				testItemTypeDto.setLabel("Disabled Test Assertion");
-				testItemTypeDto.setId(EidFactory.getDefault().createAndPreserveStr("92f22a19-2ec2-43f0-8971-c2da3eaafcd2"));
-				testItemTypeDto.setDescription("");
-				testItemTypeDto.setReference(
-						"https://github.com/interactive-instruments/etf-bsxtd/wiki/Test-Assertion-Types#test-assertion-type-4");
-				put(testItemTypeDto.getId(), testItemTypeDto);
-			}
+    public static final EidMap<TestItemTypeDto> STANDARD_TEST_ITEM_TYPES = new DefaultEidMap<TestItemTypeDto>() {
+        {
+            {
+                final TestItemTypeDto testItemTypeDto = new TestItemTypeDto();
+                testItemTypeDto.setLabel("Manual Test Assertion");
+                testItemTypeDto.setId(EidFactory.getDefault().createAndPreserveStr("b48eeaa3-6a74-414a-879c-1dc708017e11"));
+                testItemTypeDto.setDescription("A Manual Test Assertion requires that a tester manually validates a result");
+                testItemTypeDto.setReference(
+                        "https://github.com/interactive-instruments/etf-bsxtd/wiki/Test-Assertion-Types#test-assertion-type-2");
+                put(testItemTypeDto.getId(), testItemTypeDto);
+            }
+            {
+                final TestItemTypeDto testItemTypeDto = new TestItemTypeDto();
+                testItemTypeDto.setLabel("Disabled Test Assertion");
+                testItemTypeDto.setId(EidFactory.getDefault().createAndPreserveStr("92f22a19-2ec2-43f0-8971-c2da3eaafcd2"));
+                testItemTypeDto.setDescription("");
+                testItemTypeDto.setReference(
+                        "https://github.com/interactive-instruments/etf-bsxtd/wiki/Test-Assertion-Types#test-assertion-type-4");
+                put(testItemTypeDto.getId(), testItemTypeDto);
+            }
 
-		}
-	};
+        }
+    };
 
-	public static final TranslationTemplateBundleDto STANDARD_TRANSLATION_TEMPLATE_BUNDLE = createTranslationTemplateBundle();
+    public static final TranslationTemplateBundleDto STANDARD_TRANSLATION_TEMPLATE_BUNDLE = createTranslationTemplateBundle();
 
-	private static TranslationTemplateBundleDto createTranslationTemplateBundle() {
-		final TranslationTemplateBundleDto translationTemplateBundle = new TranslationTemplateBundleDto();
-		translationTemplateBundle.setId(EidFactory.getDefault().createAndPreserveStr("4fde5176-9f9e-4bd3-a952-3b248d715a0f"));
-		translationTemplateBundle.setSource(URI.create("library://etf-spi"));
-		final List<TranslationTemplateDto> translationTemplateDtos = new ArrayList<TranslationTemplateDto>() {
-			{
-				final TranslationTemplateDto template1En = new TranslationTemplateDto(
-						"TR.unspecifiedForwardedError", Locale.ENGLISH.toLanguageTag(),
-						"{error}");
-				final TranslationTemplateDto template1De = new TranslationTemplateDto(
-						"TR.unspecifiedForwardedError", Locale.GERMAN.toLanguageTag(),
-						"{error}");
-				add(template1En);
-				add(template1De);
-			}
-		};
-		translationTemplateBundle.addTranslationTemplates(translationTemplateDtos);
-		return translationTemplateBundle;
-	}
+    private static TranslationTemplateBundleDto createTranslationTemplateBundle() {
+        final TranslationTemplateBundleDto translationTemplateBundle = new TranslationTemplateBundleDto();
+        translationTemplateBundle.setId(EidFactory.getDefault().createAndPreserveStr("4fde5176-9f9e-4bd3-a952-3b248d715a0f"));
+        translationTemplateBundle.setSource(URI.create("library://etf-spi"));
+        final List<TranslationTemplateDto> translationTemplateDtos = new ArrayList<TranslationTemplateDto>() {
+            {
+                final TranslationTemplateDto template1En = new TranslationTemplateDto(
+                        "TR.unspecifiedForwardedError", Locale.ENGLISH.toLanguageTag(),
+                        "{error}");
+                final TranslationTemplateDto template1De = new TranslationTemplateDto(
+                        "TR.unspecifiedForwardedError", Locale.GERMAN.toLanguageTag(),
+                        "{error}");
+                add(template1En);
+                add(template1De);
+            }
+        };
+        translationTemplateBundle.addTranslationTemplates(translationTemplateDtos);
+        return translationTemplateBundle;
+    }
 }

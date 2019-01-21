@@ -27,27 +27,32 @@ import de.interactive_instruments.exceptions.InitializationException;
  */
 public interface TestObjectPreparation {
 
-	/**
-	 * Init Test Object
-	 *
-	 * @param testObjectDto Test Object Dto
-	 * @throws InitializationException if the Test Object can not be initialized
-	 */
-	void init(final TestObjectDto testObjectDto) throws InitializationException;
+    /**
+     * Init Test Object
+     *
+     * @param testObjectDto
+     *            Test Object Dto
+     * @throws InitializationException
+     *             if the Test Object can not be initialized
+     */
+    void init(final TestObjectDto testObjectDto) throws InitializationException;
 
-	/**
-	 * Background task after initial creation
-	 *
-	 * @param testObjectDto Test Object Dto
-	 * @return executable background task
-	 */
-	Task<TestObjectDto> initialPrepareTask(final TestObjectDto testObjectDto);
+    /**
+     * Background task after initial creation
+     *
+     * @param testObjectDto
+     *            Test Object Dto
+     * @return executable background task
+     */
+    Task<TestObjectDto> initialPrepareTask(final TestObjectDto testObjectDto);
 
-	/**
-	 * Executed before a Test Run
-	 *
-	 * @param testObjectDto Test Object Dto
-	 * @throws InitializationException if the Test Object can not be initialized
-	 */
-	void prepareBeforeRun(final TestObjectDto testObjectDto) throws InitializationException;
+    /**
+     * Executed before a Test Run
+     *
+     * @param testObjectDto
+     *            Test Object Dto
+     * @throws InitializationException
+     *             if the Test Object can not be initialized
+     */
+    void prepareBeforeRun(final TestObjectDto testObjectDto) throws InitializationException;
 }

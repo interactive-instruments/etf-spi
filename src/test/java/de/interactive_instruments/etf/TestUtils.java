@@ -37,59 +37,59 @@ import de.interactive_instruments.etf.model.EidFactory;
  */
 class TestUtils {
 
-	private TestUtils() {}
+    private TestUtils() {}
 
-	static final ComponentDto COMP_DTO_1;
+    static final ComponentDto COMP_DTO_1;
 
-	static {
-		COMP_DTO_1 = new ComponentDto();
-		setBasicProperties(COMP_DTO_1, 1);
-		COMP_DTO_1.setVendor("ii");
-		COMP_DTO_1.setVersion("1.1.0");
-	}
+    static {
+        COMP_DTO_1 = new ComponentDto();
+        setBasicProperties(COMP_DTO_1, 1);
+        COMP_DTO_1.setVendor("ii");
+        COMP_DTO_1.setVersion("1.1.0");
+    }
 
-	static String toStrWithTrailingZeros(int i) {
-		return String.format("%05d", i);
-	}
+    static String toStrWithTrailingZeros(int i) {
+        return String.format("%05d", i);
+    }
 
-	static String toStrWithTrailingZeros(long i) {
-		return String.format("%05d", i);
-	}
+    static String toStrWithTrailingZeros(long i) {
+        return String.format("%05d", i);
+    }
 
-	static void setBasicProperties(final Dto dto, final long i) {
-		final String name = dto.getClass().getSimpleName() + "." + toStrWithTrailingZeros(i);
-		dto.setId(EidFactory.getDefault().createUUID(name));
-		if (dto instanceof MetaDataItemDto) {
-			final MetaDataItemDto mDto = ((MetaDataItemDto) dto);
-			mDto.setLabel(name + ".label");
-			mDto.setDescription(name + ".description");
-		}
-		if (dto instanceof RepositoryItemDto) {
-			final RepositoryItemDto rDto = ((RepositoryItemDto) dto);
-			rDto.setAuthor(name + ".author");
-			rDto.setRemoteResource(URI.create("http://notset"));
-			rDto.setLocalPath("/");
-			rDto.setCreationDate(new Date(0));
-			rDto.setVersionFromStr("1.0.0");
-			rDto.setItemHash(SUtils.fastCalcHashAsHexStr(name));
-		}
-		if (dto instanceof ResultModelItemDto) {
-			final ResultModelItemDto rDto = ((ResultModelItemDto) dto);
-			rDto.setStartTimestamp(new Date(0));
-			rDto.setResultStatus(TestResultStatus.FAILED);
-			rDto.setDuration(1000);
-		}
-	}
+    static void setBasicProperties(final Dto dto, final long i) {
+        final String name = dto.getClass().getSimpleName() + "." + toStrWithTrailingZeros(i);
+        dto.setId(EidFactory.getDefault().createUUID(name));
+        if (dto instanceof MetaDataItemDto) {
+            final MetaDataItemDto mDto = ((MetaDataItemDto) dto);
+            mDto.setLabel(name + ".label");
+            mDto.setDescription(name + ".description");
+        }
+        if (dto instanceof RepositoryItemDto) {
+            final RepositoryItemDto rDto = ((RepositoryItemDto) dto);
+            rDto.setAuthor(name + ".author");
+            rDto.setRemoteResource(URI.create("http://notset"));
+            rDto.setLocalPath("/");
+            rDto.setCreationDate(new Date(0));
+            rDto.setVersionFromStr("1.0.0");
+            rDto.setItemHash(SUtils.fastCalcHashAsHexStr(name));
+        }
+        if (dto instanceof ResultModelItemDto) {
+            final ResultModelItemDto rDto = ((ResultModelItemDto) dto);
+            rDto.setStartTimestamp(new Date(0));
+            rDto.setResultStatus(TestResultStatus.FAILED);
+            rDto.setDuration(1000);
+        }
+    }
 
-	static ExecutableTestSuiteDto createEts(final int nr) {
-		return createEts(nr, null);
-	}
+    static ExecutableTestSuiteDto createEts(final int nr) {
+        return createEts(nr, null);
+    }
 
-	static ExecutableTestSuiteDto createEts(final int nr, final ComponentDto testDriver) {
-		final ExecutableTestSuiteDto ets = new ExecutableTestSuiteDto();
-		ets.setLabel("ETS." + String.valueOf(nr));
-		ets.setId(EidFactory.getDefault().createUUID(ets.getLabel()));
-		ets.setTestDriver(testDriver);
-		return ets;
-	}
+    static ExecutableTestSuiteDto createEts(final int nr, final ComponentDto testDriver) {
+        final ExecutableTestSuiteDto ets = new ExecutableTestSuiteDto();
+        ets.setLabel("ETS." + String.valueOf(nr));
+        ets.setId(EidFactory.getDefault().createUUID(ets.getLabel()));
+        ets.setTestDriver(testDriver);
+        return ets;
+    }
 }

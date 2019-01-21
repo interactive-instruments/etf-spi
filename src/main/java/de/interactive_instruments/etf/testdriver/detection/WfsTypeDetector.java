@@ -36,116 +36,116 @@ import de.interactive_instruments.etf.model.EID;
  */
 public class WfsTypeDetector implements XmlTypeDetector {
 
-	@Override
-	public XmlTypeDetectionCmd createCmd(final XMLReader xmlReader) {
-		return null;
-	}
+    @Override
+    public XmlTypeDetectionCmd createCmd(final XMLReader xmlReader) {
+        return null;
+    }
 
-	@Override
-	public Collection<MediaType> supportedTypes() {
-		return null;
-	}
+    @Override
+    public Collection<MediaType> supportedTypes() {
+        return null;
+    }
 
-	@Override
-	public boolean supportsDetectionByMimeType() {
-		return true;
-	}
+    @Override
+    public boolean supportsDetectionByMimeType() {
+        return true;
+    }
 
-	@Override
-	public boolean supportsDetectionByFileExtension() {
-		return true;
-	}
+    @Override
+    public boolean supportsDetectionByFileExtension() {
+        return true;
+    }
 
-	@Override
-	public boolean supportsDetectionByContent() {
-		return true;
-	}
+    @Override
+    public boolean supportsDetectionByContent() {
+        return true;
+    }
 
-	@Override
-	public EID getId() {
-		return null;
-	}
+    @Override
+    public EID getId() {
+        return null;
+    }
 
-	private static class WfsTypeDetectorCmd implements XmlTypeDetectionCmd {
+    private static class WfsTypeDetectorCmd implements XmlTypeDetectionCmd {
 
-		private Status status = Status.NEED_MORE_DATA;
-		// Wfs title
-		private String label;
-		// Wfs description
-		private String description;
-		int nodeLevel = 0;
+        private Status status = Status.NEED_MORE_DATA;
+        // Wfs title
+        private String label;
+        // Wfs description
+        private String description;
+        int nodeLevel = 0;
 
-		@Override
-		public Status status() {
-			return status;
-		}
+        @Override
+        public Status status() {
+            return status;
+        }
 
-		@Override
-		public void setType(final TestObjectDto dto) {
+        @Override
+        public void setType(final TestObjectDto dto) {
 
-		}
+        }
 
-		@Override
-		public Collection<TestObjectTypeDto> getDetectibleTypes() {
-			return null;
-		}
+        @Override
+        public Collection<TestObjectTypeDto> getDetectibleTypes() {
+            return null;
+        }
 
-		@Override
-		public void setDocumentLocator(final Locator locator) {
+        @Override
+        public void setDocumentLocator(final Locator locator) {
 
-		}
+        }
 
-		@Override
-		public void startDocument() throws SAXException {
-			nodeLevel = 0;
-			label = null;
-			description = null;
-		}
+        @Override
+        public void startDocument() throws SAXException {
+            nodeLevel = 0;
+            label = null;
+            description = null;
+        }
 
-		@Override
-		public void endDocument() throws SAXException {
+        @Override
+        public void endDocument() throws SAXException {
 
-		}
+        }
 
-		@Override
-		public void startPrefixMapping(final String prefix, final String uri) throws SAXException {
+        @Override
+        public void startPrefixMapping(final String prefix, final String uri) throws SAXException {
 
-		}
+        }
 
-		@Override
-		public void endPrefixMapping(final String prefix) throws SAXException {
+        @Override
+        public void endPrefixMapping(final String prefix) throws SAXException {
 
-		}
+        }
 
-		@Override
-		public void startElement(final String uri, final String localName, final String qName, final Attributes atts)
-				throws SAXException {
+        @Override
+        public void startElement(final String uri, final String localName, final String qName, final Attributes atts)
+                throws SAXException {
 
-		}
+        }
 
-		@Override
-		public void endElement(final String uri, final String localName, final String qName) throws SAXException {
+        @Override
+        public void endElement(final String uri, final String localName, final String qName) throws SAXException {
 
-		}
+        }
 
-		@Override
-		public void characters(final char[] ch, final int start, final int length) throws SAXException {
+        @Override
+        public void characters(final char[] ch, final int start, final int length) throws SAXException {
 
-		}
+        }
 
-		@Override
-		public void ignorableWhitespace(final char[] ch, final int start, final int length) throws SAXException {
+        @Override
+        public void ignorableWhitespace(final char[] ch, final int start, final int length) throws SAXException {
 
-		}
+        }
 
-		@Override
-		public void processingInstruction(final String target, final String data) throws SAXException {
+        @Override
+        public void processingInstruction(final String target, final String data) throws SAXException {
 
-		}
+        }
 
-		@Override
-		public void skippedEntity(final String name) throws SAXException {
+        @Override
+        public void skippedEntity(final String name) throws SAXException {
 
-		}
-	}
+        }
+    }
 }
