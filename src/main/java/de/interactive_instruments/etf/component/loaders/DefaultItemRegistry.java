@@ -99,7 +99,8 @@ public final class DefaultItemRegistry implements ItemRegistry {
 
         @Override
         public DependencyState resolve(final Dto dto) {
-            throw new IllegalStateException("Dto already registered");
+            throw new IllegalStateException("Item '" + dto.getId()
+                    + "' already registered. The ETS Developer or the Administrator should check for duplicate IDs (in duplicated files).");
         }
 
         @Override
