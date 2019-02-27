@@ -20,6 +20,7 @@
 package de.interactive_instruments.etf.component.loaders;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.locks.ReentrantLock;
 
 import de.interactive_instruments.etf.dal.dto.Dto;
@@ -41,12 +42,12 @@ public final class DefaultItemRegistry implements ItemRegistry {
      * Represents the state of a dependency and the associated listeners
      */
     private static abstract class DependencyState {
-        protected List<DependencyChangeListener> listeners;
+        protected Set<DependencyChangeListener> listeners;
 
         protected final void addListener(final DependencyChangeListener listener) {
             if (listener != null) {
                 if (listeners == null) {
-                    listeners = new ArrayList<DependencyChangeListener>(1) {
+                    listeners = new ConcurrentSkipListSet<DependencyChangeListener>() {
                         {
                             add(listener);
                         }
@@ -86,7 +87,7 @@ public final class DefaultItemRegistry implements ItemRegistry {
         }
 
         private ResolvedDependencyState(
-                final List<DependencyChangeListener> listeners,
+                final Set<DependencyChangeListener> listeners,
                 final Dto entry) {
             this.listeners = listeners;
             this.entry = entry;
@@ -145,7 +146,7 @@ public final class DefaultItemRegistry implements ItemRegistry {
             addListener(listener);
         }
 
-        private UnknownDependencyState(final List<DependencyChangeListener> listeners) {
+        private UnknownDependencyState(final Set<DependencyChangeListener> listeners) {
             this.listeners = listeners;
         }
 
