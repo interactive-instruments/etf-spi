@@ -63,7 +63,7 @@ public class DefaultItemRegistryTest {
         }
     }
 
-    private static class ChangeListener implements ItemRegistry.DependencyChangeListener {
+    private static class ChangeListener implements ItemRegistry.DependencyChangeListener, Comparable<ChangeListener> {
 
         public Dto resolvedItem;
         public Class<? extends Dto> deregisteredItem;
@@ -84,6 +84,11 @@ public class DefaultItemRegistryTest {
         @Override
         public void fireEventDependencyUpdated(final Dto updatedItem) {
             this.updatedItem = updatedItem;
+        }
+
+        @Override
+        public int compareTo(final ChangeListener o) {
+            return Integer.compare(o.hashCode(), hashCode());
         }
     }
 
