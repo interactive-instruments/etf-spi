@@ -61,11 +61,20 @@ final class DefaultTestRun implements TestRun {
     private long maxSteps = -1;
     private long overallStepsCompleted = 0;
 
+    private void restetMax() {
+        this.maxSteps = overallStepsCompleted;
+    }
+
+    private void addMax(final long max) {
+        this.maxSteps += max;
+    }
+
     private class RunProgress implements TaskProgress {
+
         @Override
-        public long getMaxSteps() {
+        public synchronized long getMaxSteps() {
             // if (maxSteps == -1) {
-            maxSteps = 0;
+            restetMax();
             if (testRunDto.getTestTasks() != null) {
                 for (int i = 0; i < testRunDto.getTestTasks().size(); i++) {
                     long max = 0;
@@ -73,15 +82,15 @@ final class DefaultTestRun implements TestRun {
                             && testTasks.get(currentRunIndex).getProgress() != null) {
                         max = testTasks.get(currentRunIndex).getProgress().getMaxSteps();
                     }
-                    if (max <= 0) {
+                    if (max < 0) {
                         final long lowestTestLevelItemSize = testRunDto.getTestTasks().get(i).getExecutableTestSuite()
                                 .getLowestLevelItemSize();
                         if (lowestTestLevelItemSize == 0) {
                             throw new IllegalStateException("Executable Test Suite does not possess test items");
                         }
-                        max += lowestTestLevelItemSize;
+                        max = lowestTestLevelItemSize;
                     }
-                    maxSteps += max;
+                    addMax(max);
                 }
             }
             // }
@@ -350,9 +359,7 @@ final class DefaultTestRun implements TestRun {
         synchronized (this) {
             this.oldState = this.currentState;
             this.currentState = state;
-            if (this.eventListeners != null) {
-                this.eventListeners.forEach(l -> l.taskRunChangedEvent(this, this.currentState, this.oldState));
-            }
+            this.eventListeners.forEach(l -> l.taskRunChangedEvent(this, this.currentState, this.oldState));
         }
     }
 
