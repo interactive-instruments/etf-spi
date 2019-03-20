@@ -22,7 +22,11 @@ package de.interactive_instruments.etf.component.loaders;
 import java.io.File;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.interactive_instruments.Releasable;
+import de.interactive_instruments.SUtils;
 import de.interactive_instruments.etf.dal.dto.Dto;
 import de.interactive_instruments.etf.model.*;
 import de.interactive_instruments.exceptions.ObjectWithIdNotFoundException;
@@ -34,6 +38,7 @@ import de.interactive_instruments.exceptions.ObjectWithIdNotFoundException;
  */
 public abstract class AbstractItemFileLoader<T extends Dto>
         implements ItemFileLoaderFactory.FileChangeListener, ItemRegistry.DependencyChangeListener {
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final EidHolderMap<Dto> resolvedDependencies = new DefaultEidHolderMap();
     private final Set<EID> unresolvedDependencies = new HashSet<>();
     private ItemRegistry registry = NullItemRegistry.instance();
@@ -164,6 +169,11 @@ public abstract class AbstractItemFileLoader<T extends Dto>
 
     boolean canBuild() {
         ensureContextClassLoader();
+        if (logger.isInfoEnabled() && !this.unresolvedDependencies.isEmpty()) {
+            logger.info("Item in file '{}' is still waiting for the resolution of {} dependencies: {} ",
+                    file.getName(), this.unresolvedDependencies.size(),
+                    SUtils.concatStr(",", this.unresolvedDependencies));
+        }
         return this.prepared && this.unresolvedDependencies.isEmpty();
     }
 
@@ -195,6 +205,7 @@ public abstract class AbstractItemFileLoader<T extends Dto>
     protected final void destroyAndDeregisterItem() {
         if (item != null) {
             ensureContextClassLoader();
+            logger.trace("Releasing item '{}' created from file '{}' ", this.item.getId(), this.file.getName());
             this.registry.deregister(Collections.singleton(item.createCopy()));
             itemListener.eventItemDestroyed(this.item.getId());
             doRelease();

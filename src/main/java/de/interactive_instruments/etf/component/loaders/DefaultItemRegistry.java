@@ -23,6 +23,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.interactive_instruments.etf.dal.dto.Dto;
 import de.interactive_instruments.etf.model.DefaultEidHolderMap;
 import de.interactive_instruments.etf.model.EID;
@@ -37,6 +40,8 @@ import de.interactive_instruments.exceptions.ObjectWithIdNotFoundException;
  * @author Jon Herrmann ( herrmann aT interactive-instruments doT de )
  */
 public final class DefaultItemRegistry implements ItemRegistry {
+
+    private final static Logger logger = LoggerFactory.getLogger(DefaultItemRegistry.class);
 
     /**
      * Represents the state of a dependency and the associated listeners
@@ -233,9 +238,11 @@ public final class DefaultItemRegistry implements ItemRegistry {
             lock.lock();
             if (dependency == null) {
                 entries.put(dto.getId(), DependencyEntry.createResolved(dto));
+                logger.debug("Adding '{}'", dto.getId());
                 lock.unlock();
             } else {
                 lock.unlock();
+                logger.debug("Adding '{}' and informing dependent listeners", dto.getId());
                 dependency.resolve(dto);
             }
         }
@@ -248,6 +255,7 @@ public final class DefaultItemRegistry implements ItemRegistry {
             // ignore items that are not registered
             if (dependency != null) {
                 dependency.deregister();
+                logger.debug("Unregistered '{}'", eidHolder.getId());
             }
         }
     }
@@ -260,6 +268,7 @@ public final class DefaultItemRegistry implements ItemRegistry {
                 throw new ObjectWithIdNotFoundException(dto.getId().toString());
             } else {
                 dependency.update(dto);
+                logger.debug("Updated '{}'", dto.getId());
             }
         }
     }
@@ -293,10 +302,13 @@ public final class DefaultItemRegistry implements ItemRegistry {
                 final Dto dto = result.registerListenerDependencyAndGetTarget(callbackListener);
                 if (dto != null) {
                     results.add(dto);
+                } else if (logger.isDebugEnabled()) {
+                    logger.debug("Registering listener for unresolved dependency '{}' ", dependency);
                 }
                 listenerEntries.add(result);
             } else {
                 final DependencyEntry unknownEntry = DependencyEntry.createUnknown(callbackListener, dependency);
+                logger.debug("Registering listener for unresolved dependency '{}' ", dependency);
                 entries.put(dependency, unknownEntry);
                 listenerEntries.add(unknownEntry);
             }
