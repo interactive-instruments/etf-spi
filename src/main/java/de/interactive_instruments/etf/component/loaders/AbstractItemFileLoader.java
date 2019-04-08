@@ -281,14 +281,15 @@ public abstract class AbstractItemFileLoader<T extends Dto>
     @Override
     public int compareTo(final ItemFileLoaderFactory.FileChangeListener o) {
         if (o instanceof AbstractItemFileLoader) {
-            final int depsCmp = Integer.compare(
-                    unresolvedDependencies.size(),
-                    ((AbstractItemFileLoader) o).unresolvedDependencies.size());
-            if (depsCmp >= 0) {
-                return Integer.compare(this.priority,
-                        ((AbstractItemFileLoader) o).priority);
+            final int prioCmp = Integer.compare(this.priority,
+                    ((AbstractItemFileLoader) o).priority);
+            if (prioCmp == 0) {
+                final int depsCmp = Integer.compare(
+                        unresolvedDependencies.size(),
+                        ((AbstractItemFileLoader) o).unresolvedDependencies.size());
+                return depsCmp;
             }
-            return depsCmp;
+            return prioCmp;
         }
         return 0;
     }
